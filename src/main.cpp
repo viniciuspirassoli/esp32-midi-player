@@ -50,6 +50,15 @@ void setup()
   ledcWrite(2, 0);
   ledcWrite(3, 0);
 
+  if (LittleFS.begin())
+    Serial.println("LittleFS Initialize....ok");
+  else
+  {
+    Serial.println("LittleFS Initialize....error");
+    delay(1000);
+    ESP.restart();
+  }
+
   // create Tasks
   // TODO: change priorities
   TaskHandle_t LCD = NULL;
