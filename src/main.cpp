@@ -4,17 +4,18 @@
 #include <ArduinoJson.h>
 #include "../pins/Pins.h"
 
-#define DEFAULT_STACK_SIZE 50 //words
+#define DEFAULT_STACK_SIZE 50 // words
 #define DEFAULT_PRIORITY 5
 
-void LCDTask(void* params);
-void audioPlayerTask(void* params);
+void LCDTask(void *params);
+void audioPlayerTask(void *params);
 
 void IRAM_ATTR keyboardInterrupt();
 
 LiquidCrystal_I2C LCD(LCD_ADDR, 16, 2);
 
-void setup() {
+void setup()
+{
 
   // setup pins
   pinMode(OUTPUT_1, OUTPUT);
@@ -50,31 +51,34 @@ void setup() {
   ledcWrite(3, 0);
 
   // create Tasks
-  //TODO: change priorities
+  // TODO: change priorities
   TaskHandle_t LCD = NULL;
-  if (xTaskCreate(LCDTask, "LCD", DEFAULT_STACK_SIZE, NULL, DEFAULT_PRIORITY, &LCD) != pdPASS) {
+  if (xTaskCreate(LCDTask, "LCD", DEFAULT_STACK_SIZE, NULL, DEFAULT_PRIORITY, &LCD) != pdPASS)
+  {
     exit(-1);
   }
 
   TaskHandle_t audio_Player = NULL;
-  if (xTaskCreate(audioPlayerTask, "audioPlayer", DEFAULT_STACK_SIZE, NULL, DEFAULT_PRIORITY, &audio_Player) != pdPASS) {
+  if (xTaskCreate(audioPlayerTask, "audioPlayer", DEFAULT_STACK_SIZE, NULL, DEFAULT_PRIORITY, &audio_Player) != pdPASS)
+  {
     exit(-1);
   }
-
 }
 
-void loop() {
+void loop()
+{
   // put your main code here, to run repeatedly:
-  
 }
 
-void LCDTask(void* params) {
-  while (true) {
+void LCDTask(void *params)
+{
+  while (true)
+  {
     LCD.printstr("Sus amogus");
     vTaskDelay(500 / portTICK_PERIOD_MS);
   }
 }
 
-void audioPlayerTask(void* params) {
-
+void audioPlayerTask(void *params)
+{
 }
