@@ -11,5 +11,5 @@
 #define OUTPUT_3 17
 #define OUTPUT_4 18
 
-#define LCD_ADDR 0b1111111
+#define LCD_ADDR 0x27
 #endif //PINS_H
