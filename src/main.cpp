@@ -67,11 +67,11 @@ void setup()
     exit(-1);
   }
 
-  TaskHandle_t audio_Player = NULL;
-  if (xTaskCreate(audioPlayerTask, "audioPlayer", DEFAULT_STACK_SIZE, NULL, DEFAULT_PRIORITY, &audio_Player) != pdPASS)
-  {
-    exit(-1);
-  }
+  // TaskHandle_t audio_Player = NULL;
+  // if (xTaskCreate(audioPlayerTask, "audioPlayer", DEFAULT_STACK_SIZE, NULL, DEFAULT_PRIORITY, &audio_Player) != pdPASS)
+  // {
+  //   exit(-1);
+  // }
 }
 
 void loop()
