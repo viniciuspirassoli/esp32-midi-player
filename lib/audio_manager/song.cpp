@@ -21,6 +21,22 @@ void Track::load_from_file(File &file)
     }
 }
 
+void Track::load_from_values(int notes[], unsigned int timestamps[], unsigned int durations[], int n_notes)
+{
+    this->n_notes = n_notes;
+    notes[0] = 150;
+    notes[1] = 150;
+    notes[2] = 150;
+
+    this->timestamps[0] = 0;
+    // this->timestamps[1] = 100;
+    // this->timestamps[2] = 200;
+
+    // this->durations[0] = 50;
+    // this->durations[1] = 50;
+    // this->durations[2] = 50;
+}
+
 bool Song::load_from_file(String &filename)
 {
     File file = LittleFS.open(filename, "r");
@@ -55,17 +71,6 @@ bool Song::load_from_file(String &filename)
     // serial_print();
 
     return true;
-}
-
-void Track::load_from_values(int notes[], unsigned int timestamps[], unsigned int durations[], int n_notes)
-{
-    this->n_notes = n_notes;
-    for (int i = 0; i < n_notes; ++i)
-    {
-        this->notes[i] = notes[i];
-        this->timestamps[i] = timestamps[i];
-        this->durations[i] = durations[i];
-    }
 }
 
 void Song::serial_print()

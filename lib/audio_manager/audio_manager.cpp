@@ -78,14 +78,14 @@ void AudioManager::playTest()
         loop_track.load_from_values(notes, timestamps, durations, 3);
     }
 
-    this->song = smb_song;
+    // this->song = smb_song;
 
-    playing = true;
-    for (int i = 0; i < CHANNELS; i++)
-        last_event[i] = 0;
-    init_time = millis();
+    // playing = true;
+    // for (int i = 0; i < CHANNELS; i++)
+    //     last_event[i] = 0;
+    // init_time = millis();
 
-    this->update();
+    // this->update();
 }
 
 String AudioManager::handleNoteRequest(StaticJsonDocument<200> doc)
@@ -120,15 +120,6 @@ String AudioManager::handleSongRequest(StaticJsonDocument<200> doc)
 
 void AudioManager::init()
 {
-    pinMode(OUTPUT_1, OUTPUT);
-    pinMode(OUTPUT_2, OUTPUT);
-    pinMode(OUTPUT_3, OUTPUT);
-    pinMode(OUTPUT_4, OUTPUT);
-
-    noTone(OUTPUT_1);
-    noTone(OUTPUT_2);
-    noTone(OUTPUT_3);
-    noTone(OUTPUT_4);
 }
 
 void AudioManager::update()
