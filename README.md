@@ -6,6 +6,3 @@ An ESP32 based 4-channel MIDI file player. Created for Embedded Systems class @ 
 - Read the midi files / Manuel
 - Play the midi files / Together
 - FreeRTOS Tasks / Vinicius
-
-SDA = 8
-SCL = 9
