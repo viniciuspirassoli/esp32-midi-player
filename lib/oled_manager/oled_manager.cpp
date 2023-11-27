@@ -3,34 +3,61 @@
 void OLEDManager::begin(const int sda, const int scl) {
   Wire.setPins(sda, scl);
   Wire.begin(sda, scl);
+  oled.setDisplayRotation(U8G2_R0);
   oled.begin();
-  oled.setFont(u8x8_font_amstrad_cpc_extended_f);
-
+  oled.clear();
+  this->lastPressedButton = 0;
 }
 
-void OLEDManager::displaySongName(const String songName){
-  oled.clear();
+void OLEDManager::displayAllComponents(const char* songName, bool isPlayButtonPressed, int elapsedTimeInSeconds, int totalDurationInSeconds) {
+    oled.clear();
+
+    lastPressedButton = isPlayButtonPressed ? !lastPressedButton : lastPressedButton;
+
+    displaySongName(songName);
+    if (lastPressedButton == 0) {
+        displayPlayIcon();
+    } else {
+        displayPauseIcon();
+    }
+
+    displayPlayLeftRightButtons();
+
+    displayProgressBar(elapsedTimeInSeconds, totalDurationInSeconds);
+
+    oled.display();
+}
+
+void OLEDManager::displaySongName(const char* songName){
+  oled.setFont(u8g2_font_helvB08_tr);
   int screenWidth = oled.getCols();
-  int textWidth = oled.getUTF8Len(songName.c_str());
-  oled.setCursor((screenWidth - textWidth) / 2, oled.getRows() / 2);
-  oled.print(songName);
-}
-
-void OLEDManager::scrollSongName(String songName, const unsigned short delayTime){
-  oled.clear();
-  int totalColums = oled.getCols();
-  for (int i=0; i < oled.getCols(); i++) {
-    songName = " " + songName;  
-  } 
-  songName = " " + songName; 
-  for (int position = 0; position < songName.length(); position++) {
-    oled.setCursor(0, oled.getRows() / 2);
-    oled.print(songName.substring(position, position + oled.getCols()));
-    delay(delayTime);
-  }
+  int textWidth = oled.getUTF8Width(songName);
+  oled.drawStr((screenWidth - textWidth) / 2, 20, songName);
 }
 
 void OLEDManager::displayPauseIcon(){
-  oled.setCursor((oled.getCols() - 3) / 2, oled.getRows() / 2 + 1);
-  oled.print("||");
+  oled.drawLine(63, 51, 63, 55); //TODO change these values
+  oled.drawLine(60, 51, 60, 55); //TODO change these values
 }
+
+void OLEDManager::displayPlayIcon(){
+  oled.drawXBMP(61, 51, 3, 5, image_ButtonRightSmall_3x5_bits); //TODO change these values 
+}
+
+void OLEDManager::displayPlayLeftRightButtons()
+{
+  oled.drawXBMP(50, 51, 3, 5, image_ButtonLeftSmall_3x5_bits); //TODO change these values
+  oled.drawXBMP(47, 51, 3, 5, image_ButtonLeftSmall_3x5_bits); //TODO change these values
+
+  oled.drawXBMP(71, 51, 3, 5, image_ButtonRightSmall_3x5_bits); //TODO change these values
+  oled.drawXBMP(74, 51, 3, 5, image_ButtonRightSmall_3x5_bits); //TODO change these values
+}
+
+void OLEDManager::displayProgressBar(int elapsedTimeInSecond , int totalDurationInSecond)
+{
+  int progress = (elapsedTimeInSecond / totalDurationInSecond) * 50; //TODO change these values
+  oled.drawBox(38, 35, progress, 6);
+}
+
+const unsigned char OLEDManager::image_ButtonLeftSmall_3x5_bits[] U8X8_PROGMEM = {0x04, 0x06, 0x07, 0x06, 0x04};
+const unsigned char OLEDManager::image_ButtonRightSmall_3x5_bits[] U8X8_PROGMEM = {0x01, 0x03, 0x07, 0x03, 0x01};
