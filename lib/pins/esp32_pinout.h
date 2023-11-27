@@ -5,9 +5,10 @@
 #define GPIO0 0
 #define TDX 1   // TDX
 #define GPIO2 2 // ADC2 pins cannot be used when Wi-Fi is used.
-#define RDX 3   // RDX
-#define GPIO4 4
-#define GPIO5 5
+#define RX2 16   // RDX
+#define TX2 17   //
+#define D4 4
+#define D5 5
 #define GPIO6 \
     6 // SPI0/1: usually connected to the SPI flash and PSRAM integrated on the
       // module and therefore should not be used for other purposes.*/

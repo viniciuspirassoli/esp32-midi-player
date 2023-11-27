@@ -29,12 +29,12 @@ void Track::load_from_values(int notes[], unsigned int timestamps[], unsigned in
     notes[2] = 150;
 
     this->timestamps[0] = 0;
-    // this->timestamps[1] = 100;
-    // this->timestamps[2] = 200;
+    this->timestamps[1] = 100;
+    this->timestamps[2] = 200;
 
-    // this->durations[0] = 50;
-    // this->durations[1] = 50;
-    // this->durations[2] = 50;
+    this->durations[0] = 50;
+    this->durations[1] = 50;
+    this->durations[2] = 50;
 }
 
 bool Song::load_from_file(String &filename)
