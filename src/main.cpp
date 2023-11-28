@@ -2,20 +2,19 @@
 #include <Wire.h>
 #include <U8x8lib.h>
 #include "audio_manager.h"
-
 #include <LittleFS.h>
+#include "oled_manager.h"
 #include <ArduinoJson.h>
 #include "pins.h"
 
 #define DEFAULT_PRIORITY 5
 
 AudioManager am;
+OLEDManager oledMan;
 
 void oledTask(void *params);
 void blinkLed(void *params);
 void updateAudioManager(void *params);
-
-U8X8_SSD1306_128X64_NONAME_HW_I2C oled(/* reset=*/U8X8_PIN_NONE);
 
 void setup()
 {
@@ -24,10 +23,6 @@ void setup()
 
   Wire.setPins((int)SDA, (int)SCL);
   Wire.begin((int)SDA, (int)SCL);
-  oled.begin();
-  oled.setFont(u8x8_font_amstrad_cpc_extended_f);
-  oled.clear();
-  oled.setCursor(0, 0);
 
   am.init();
   if (!LittleFS.begin())
@@ -42,6 +37,8 @@ void setup()
     oled.print("Error loading song n " + song_number);
     delay(1000);
   }
+
+  oledMan.begin((int)SDA, (int)SCL);
 
   TaskHandle_t oled_task = NULL;
   xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, &oled_task);
@@ -59,16 +56,27 @@ void loop()
 
 void oledTask(void *params)
 {
+  // TODO: pass these time units in void *params
+  int elapsedTimeInSeconds = 0, totalTimeInSeconds = 30;
+  unsigned long lastTime = millis();
+
   while (true)
   {
-    oled.noInverse();
-    oled.print("Joao");
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    oled.clear();
-    oled.inverse();
-    oled.print("fjkdal");
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    oled.clear();
+    unsigned long currTime = millis();
+    if (currTime >= lastTime + 1000UL)
+    {
+
+      if (elapsedTimeInSeconds > totalTimeInSeconds - 1)
+      {
+        elapsedTimeInSeconds = 0;
+      }
+      else
+        elapsedTimeInSeconds++;
+
+      oledMan.displayAllComponents("Test 1@&", false, elapsedTimeInSeconds, totalTimeInSeconds);
+
+      lastTime = currTime;
+    }
   }
 
   vTaskDelete(NULL);
