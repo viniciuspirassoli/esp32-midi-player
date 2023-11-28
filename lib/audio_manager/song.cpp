@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <LittleFS.h>
 
-void Track::load_from_file(File &file)
+int Track::load_from_file(File &file)
 {
     n_notes = file.parseInt();
 
@@ -19,6 +19,8 @@ void Track::load_from_file(File &file)
     {
         durations[i] = (unsigned int)file.parseInt();
     }
+
+    return n_notes;
 }
 
 void Track::load_from_values(int notes[], unsigned int timestamps[], unsigned int durations[], int n_notes)
@@ -54,15 +56,23 @@ bool Song::load_from_file(String &filename)
     Serial.print("Tracks: ");
     Serial.println(n_tracks);
 
+    int max_number_of_notes = 0;
+    longest_track_id = 0;
+
     for (int i = 0; i < n_tracks; i++)
     {
         Track &loop_track = this->get_track(i);
-        loop_track.load_from_file(file);
+        int track_number_of_notes = loop_track.load_from_file(file);
+
+        if (track_number_of_notes > max_number_of_notes) {
+            max_number_of_notes = track_number_of_notes;
+            longest_track_id = i;
+        }
 
         Serial.print("Track ");
-        Serial.print(i);
+        Serial.print(i + 1);
         Serial.print(" has ");
-        Serial.print(loop_track.get_no_notes());
+        Serial.print(loop_track.get_number_notes());
         Serial.println(" notes");
     }
 
@@ -78,11 +88,15 @@ void Song::serial_print()
         Track &t = get_track(i);
         Serial.print("Channel ");
         Serial.println(i);
-        for (int j = 0; j < t.get_no_notes(); j++)
+        for (int j = 0; j < t.get_number_notes(); j++)
         {
             Serial.print(t.get_note(j));
             Serial.print(" ");
         }
         Serial.println();
     }
+}
+
+int Song::get_longest_track_id(){
+    return longest_track_id;
 }

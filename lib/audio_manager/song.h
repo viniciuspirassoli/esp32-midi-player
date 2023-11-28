@@ -14,20 +14,19 @@ private:
     int n_notes;
     int notes[MAX_PER_CHANNEL];
     unsigned int timestamps[MAX_PER_CHANNEL], durations[MAX_PER_CHANNEL];
-
 public:
     Track()
     {
         this->n_notes = 0;
     }
 
-    void load_from_file(File &file);
+    int load_from_file(File &file);
     void load_from_values(int notes[], unsigned int timestamps[], unsigned int durations[], int n_notes);
 
     int get_note(int index) { return this->notes[index]; };
     unsigned int get_timestamp(int index) { return this->timestamps[index]; };
     unsigned int get_duration(int index) { return this->durations[index]; };
-    int get_no_notes() { return this->n_notes; };
+    int get_number_notes() { return this->n_notes; };
 
     // void set_note(int index, int note) {this->notes[index] = note;};
     // void set_timestamp(int index, unsigned int timestamp) {this->timestamps[index] = timestamp;};
@@ -39,6 +38,7 @@ class Song
 {
 private:
     Track tracks[CHANNELS];
+    int longest_track_id = 0;
 
 public:
     int n_tracks = 0, active_channels = 0;
@@ -56,6 +56,7 @@ public:
     Track &get_track(int index) { return tracks[index]; };
 
     void serial_print();
+    int get_longest_track_id();
 };
 
 #endif

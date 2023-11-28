@@ -10,9 +10,9 @@
 int last_event[CHANNELS];
 int buzzers[] = {OUTPUT_1, OUTPUT_2, OUTPUT_3, OUTPUT_4};
 
-double AudioManager::noteToFrequency(int note)
+uint32_t AudioManager::noteToFrequency(int note)
 {
-    return 440 * exp2((note - 69) / 12.0);
+    return uint32_t(440 * exp2((note - 69) / 12.0));
 }
 
 AudioManager::AudioManager() {}
@@ -23,40 +23,44 @@ bool AudioManager::playSong(int id)
     switch (id)
     {
     case 0:
-        filename = "zelda_secret.miniMid";
+        filename = "/zelda_secret.miniMid";
         break;
     case 1:
-        filename = "sonic_starlight_zone.miniMid";
+        filename = "/sonic_starlight_zone.miniMid";
         break;
     case 2:
-        filename = "smb3_overworld.miniMid";
+        filename = "/smb3_overworld.miniMid";
         break;
     case 3:
-        filename = "smb_overworld.miniMid";
+        filename = "/smb_overworld.miniMid";
         break;
     case 4:
-        filename = "mii_channel_theme.miniMid";
+        filename = "/mii_channel_theme.miniMid";
         break;
     case 5:
-        filename = "zelda_overworld.miniMid";
+        filename = "/zelda_overworld.miniMid";
         break;
     case 6:
-        filename = "careless_whisper.miniMid";
+        filename = "/careless_whisper.miniMid";
         break;
     case 7:
-        filename = "tetris_theme_a.miniMid";
+        filename = "/tetris_theme_a.miniMid";
+        break;
+    case 8:
+        filename = "/scale.miniMid";
         break;
     default:
         playing = false;
         return false;
     }
 
-    if (this->song.load_from_file(filename))
+    if (!this->song.load_from_file(filename))
     {
+        playing = false;
         return false;
     }
 
-    this.restartPlayer();
+    this->restartPlayer();
 
     // this->update();
     return true;
@@ -120,6 +124,10 @@ String AudioManager::handleNoteRequest(StaticJsonDocument<200> doc)
 void AudioManager::stopSong()
 {
     this->playing = false;
+
+    for (int i = 0; i < 4; i++) {
+        ledcWriteTone(i+1, 0);
+    }
 }
 
 String AudioManager::handleSongRequest(StaticJsonDocument<200> doc)
@@ -150,20 +158,24 @@ void AudioManager::update()
 
     for (int i = 0; i < song.get_active_channels(); i++)
     { // i for channels (1 - 4)~
-
         Track &track = song.get_track(i);
         int cur_ev = last_event[i];
 
-        if (cur_ev >= track.get_no_notes())
+        // Serial.print("Current event: ");
+        // Serial.println(cur_ev);
+
+        if (cur_ev >= track.get_number_notes())
         {
-            Serial.println("Test inside loop");
+            if(song.get_longest_track_id() == i) {
+                this->stopSong();
+                Serial.println("Stopped song");
+            }
             continue;
         }
 
         // Serial.print("Next timestamp: ");
         // Serial.println(track.get_timestamp(cur_ev));
         // Serial.println(curr_time);
-        Serial.println(cur_ev);
 
         if (curr_time > track.get_timestamp(cur_ev))
         {
@@ -171,11 +183,11 @@ void AudioManager::update()
             Serial.print(track.get_note(cur_ev));
             Serial.print(" for ");
             Serial.print(track.get_duration(cur_ev));
-            Serial.println("ms");
-            double freq = noteToFrequency(track.get_note(cur_ev));
-            // tone(buzzers[i], freq, track.get_duration(cur_ev));
-            ledcWriteTone((uint8_t)400, i + 1);
-            // ledcWriteToneWithRes(i, freq, 2);
+            Serial.print("ms");
+            uint32_t freq = noteToFrequency(track.get_note(cur_ev));
+            Serial.print(" - Frequency: ");
+            Serial.println(freq);
+            ledcWriteTone(i + 1, freq);
             last_event[i]++;
         }
     }

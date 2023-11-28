@@ -27,15 +27,14 @@ void setup()
   am.init();
   if (!LittleFS.begin())
   {
-    while (true)
-      oled.print("An Error has occurred while mounting SPIFFS");
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    ESP.restart();
   }
-  // am.playTest();
-  int song_number = 6;
+  int song_number = 3;
   if (!am.playSong(song_number))
   {
-    oled.print("Error loading song n " + song_number);
-    delay(1000);
+    Serial.println("Error in loading the song!");
+    am.stopSong();
   }
 
   oledMan.begin((int)SDA, (int)SCL);
@@ -56,7 +55,6 @@ void loop()
 
 void oledTask(void *params)
 {
-  // TODO: pass these time units in void *params
   int elapsedTimeInSeconds = 0, totalTimeInSeconds = 30;
   unsigned long lastTime = millis();
 
@@ -98,57 +96,11 @@ void blinkLed(void *params)
 
 void updateAudioManager(void *params)
 {
-  note_t notes[8] = {NOTE_C, NOTE_D, NOTE_E, NOTE_F, NOTE_G, NOTE_A, NOTE_B, NOTE_C};
-
-  int note = 0;
 
   while (true)
   {
-    // ledcWriteNote(1, notes[note], 4);
-    // ledcWriteNote(2, notes[(note + 2) % 8], 4);
-    // ledcWriteNote(3, notes[(note + 4) % 8], 4);
-    // ledcWriteNote(4, notes[(note + 6) % 8], 4);
-
-    // vTaskDelay(300 / portTICK_PERIOD_MS);
-    // ledcWriteTone(2, 0);
-    // ledcWriteTone(1, 0);
-    // ledcWriteTone(3, 0);
-    // ledcWriteTone(4, 0);
-    // vTaskDelay(300 / portTICK_PERIOD_MS);
-
-    // note++;
-    // note %= 8;
     am.update();
   }
-  // while (true)
-  // {
-  //   /* code */
-  // }
 
   vTaskDelete(NULL);
 }
-
-// void setup() litlefs working example
-// {
-//   Serial.begin(115200);
-
-//   if (!LittleFS.begin())
-//   {
-//     Serial.println("An Error has occurred while mounting SPIFFS");
-//     return;
-//   }
-
-//   File file = LittleFS.open("/careless_whisper.miniMid");
-//   if (!file)
-//   {
-//     Serial.println("Failed to open file for reading");
-//     return;
-//   }
-
-//   Serial.println("File Content:");
-//   while (file.available())
-//   {
-//     Serial.write(file.read());
-//   }
-//   file.close();
-// }

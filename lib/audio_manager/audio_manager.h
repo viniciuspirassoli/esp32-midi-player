@@ -16,7 +16,7 @@ private:
     unsigned long init_time;
     unsigned long last_update = 0;
 
-    double noteToFrequency(int note);
+    uint32_t noteToFrequency(int note);
     void restartPlayer();
 
 public:
