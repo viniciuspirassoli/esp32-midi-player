@@ -17,7 +17,7 @@ double AudioManager::noteToFrequency(int note)
 
 AudioManager::AudioManager() {}
 
-void AudioManager::playSong(int id)
+bool AudioManager::playSong(int id)
 {
     String filename;
     switch (id)
@@ -48,17 +48,27 @@ void AudioManager::playSong(int id)
         break;
     default:
         playing = false;
-        return;
+        return false;
     }
 
-    this->song.load_from_file(filename);
+    if (this->song.load_from_file(filename))
+    {
+        return false;
+    }
+
+    this.restartPlayer();
+
+    // this->update();
+    return true;
+}
+
+void AudioManager::restartPlayer()
+{
 
     playing = true;
     for (int i = 0; i < CHANNELS; i++)
         last_event[i] = 0;
     init_time = millis();
-
-    this->update();
 }
 
 void AudioManager::playTest()
@@ -85,7 +95,7 @@ void AudioManager::playTest()
         last_event[i] = 0;
     init_time = millis();
 
-    this->update();
+    // this->update();
 }
 
 String AudioManager::handleNoteRequest(StaticJsonDocument<200> doc)
@@ -120,20 +130,19 @@ String AudioManager::handleSongRequest(StaticJsonDocument<200> doc)
 
 void AudioManager::init()
 {
-  ledcSetup(1, 8000, 12);
-  ledcSetup(2, 8000, 12);
-  ledcSetup(3, 8000, 12);
-  ledcSetup(4, 8000, 12);
+    ledcSetup(1, 8000, 12);
+    ledcSetup(2, 8000, 12);
+    ledcSetup(3, 8000, 12);
+    ledcSetup(4, 8000, 12);
 
-  ledcAttachPin(OUTPUT_1, 1);
-  ledcAttachPin(OUTPUT_2, 2);
-  ledcAttachPin(OUTPUT_3, 3);
-  ledcAttachPin(OUTPUT_4, 4);
+    ledcAttachPin(OUTPUT_1, 1);
+    ledcAttachPin(OUTPUT_2, 2);
+    ledcAttachPin(OUTPUT_3, 3);
+    ledcAttachPin(OUTPUT_4, 4);
 }
 
 void AudioManager::update()
 {
-
     if (!playing)
         return;
 
@@ -146,11 +155,15 @@ void AudioManager::update()
         int cur_ev = last_event[i];
 
         if (cur_ev >= track.get_no_notes())
+        {
+            Serial.println("Test inside loop");
             continue;
+        }
 
         // Serial.print("Next timestamp: ");
         // Serial.println(track.get_timestamp(cur_ev));
         // Serial.println(curr_time);
+        Serial.println(cur_ev);
 
         if (curr_time > track.get_timestamp(cur_ev))
         {
@@ -161,8 +174,34 @@ void AudioManager::update()
             Serial.println("ms");
             double freq = noteToFrequency(track.get_note(cur_ev));
             // tone(buzzers[i], freq, track.get_duration(cur_ev));
+            ledcWriteTone((uint8_t)400, i + 1);
             // ledcWriteToneWithRes(i, freq, 2);
             last_event[i]++;
         }
     }
 }
+
+// void AudioManager::update()
+// {
+//     note_t notes[8] = {NOTE_C, NOTE_D, NOTE_E, NOTE_F, NOTE_G, NOTE_A, NOTE_B, NOTE_C};
+
+//     int note = 0;
+
+//     while (true)
+//     {
+//         ledcWriteNote(1, notes[note], 4);
+//         ledcWriteNote(2, notes[(note + 2) % 8], 4);
+//         ledcWriteNote(3, notes[(note + 4) % 8], 4);
+//         ledcWriteNote(4, notes[(note + 6) % 8], 4);
+
+//         vTaskDelay(300 / portTICK_PERIOD_MS);
+//         ledcWriteTone(2, 0);
+//         ledcWriteTone(1, 0);
+//         ledcWriteTone(3, 0);
+//         ledcWriteTone(4, 0);
+//         vTaskDelay(300 / portTICK_PERIOD_MS);
+
+//         note++;
+//         note %= 8;
+//     }
+// }

@@ -17,6 +17,7 @@ private:
     unsigned long last_update = 0;
 
     double noteToFrequency(int note);
+    void restartPlayer();
 
 public:
     AudioManager();
@@ -25,7 +26,7 @@ public:
     String handleNoteRequest(StaticJsonDocument<200> doc);
     String handleSongRequest(StaticJsonDocument<200> doc);
 
-    void playSong(int id);
+    bool playSong(int id);
     void stopSong();
     void playTest();
 

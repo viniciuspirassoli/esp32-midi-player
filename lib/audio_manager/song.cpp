@@ -39,11 +39,11 @@ void Track::load_from_values(int notes[], unsigned int timestamps[], unsigned in
 
 bool Song::load_from_file(String &filename)
 {
-    File file = LittleFS.open(filename, "r");
 
+    File file = LittleFS.open(filename, "r");
     if (!file)
     {
-        Serial.println("Failed to open file" + filename);
+        Serial.println("Failed to open file: " + filename);
         return false;
     }
     Serial.println("Opened " + filename + " (" + file.size() + ")");
@@ -67,8 +67,6 @@ bool Song::load_from_file(String &filename)
     }
 
     file.close();
-
-    // serial_print();
 
     return true;
 }
