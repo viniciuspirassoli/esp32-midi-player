@@ -37,7 +37,7 @@ void setup()
     am.stopSong();
   }
 
-  oledMan.begin((int)SDA, (int)SCL);
+  oledMan.begin();
 
   TaskHandle_t oled_task = NULL;
   xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, &oled_task);
