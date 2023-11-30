@@ -12,9 +12,7 @@ AudioManager am;
 OLEDManager oled;
 ButtonManager buttons(LEFT_BUTTON, RIGHT_BUTTON, PAUSE_PLAY_BUTTON);
 
-bool isPlaying_g = false;
-
-int player_increment_global = 0;
+String current_song_name;
 
 void oledTask(void *params);
 void buttonsTask(void *params);
@@ -69,7 +67,7 @@ void oledTask(void *params)
       else
         elapsedTimeInSeconds++;
 
-      oled.displayAllComponents("songName", isPlaying_g, elapsedTimeInSeconds, totalTimeInSeconds);
+      oled.displayAllComponents(current_song_name.c_str(), isPlaying_g, elapsedTimeInSeconds, totalTimeInSeconds);
 
       lastTime = currTime;
     }
@@ -95,19 +93,29 @@ void updateAudioManager(void *params)
   vTaskDelete(NULL);
 }
 
-void buttonsTask(void *params){
-  
+void buttonsTask(void *params)
+{
+
   while (true)
   {
-    switch(buttons.checkButtons())
+    switch (buttons.checkButtons())
     {
-      case PAUSE_PLAY_BUTTON :
-        isPlaying_g = !isPlaying_g;
-        break;
-      default:
-        break;
+    case -1:
+      current_track = --current_track % NUMBER_OF_TRACKS;
+      am.playSong(current_track, &current_song_name);
+      break;
+    case 1:
+      current_track = ++current_track % NUMBER_OF_TRACKS;
+      am.playSong(current_track, &current_song_name);
+      break;
+    case 0:
+      am.pauseSong();
+      break;
+
+    case default:
+      break;
     }
-    vTaskDelay(5/portTICK_PERIOD_MS);
+    vTaskDelay(5 / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }

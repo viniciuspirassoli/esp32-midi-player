@@ -17,7 +17,7 @@ uint32_t AudioManager::noteToFrequency(int note)
 
 AudioManager::AudioManager() {}
 
-bool AudioManager::playSong(int id)
+bool AudioManager::playSong(int id, String &song_name)
 {
     String filename;
     switch (id)
@@ -121,12 +121,18 @@ String AudioManager::handleNoteRequest(StaticJsonDocument<200> doc)
     return "Failure";
 }
 
+void Audio::pauseSong()
+{
+    this->playing = !playing;
+}
+
 void AudioManager::stopSong()
 {
     this->playing = false;
 
-    for (int i = 0; i < 4; i++) {
-        ledcWriteTone(i+1, 0);
+    for (int i = 0; i < 4; i++)
+    {
+        ledcWriteTone(i + 1, 0);
     }
 }
 
@@ -166,7 +172,8 @@ void AudioManager::update()
 
         if (cur_ev >= track.get_number_notes())
         {
-            if(song.get_longest_track_id() == i) {
+            if (song.get_longest_track_id() == i)
+            {
                 this->stopSong();
                 Serial.println("Stopped song");
             }
