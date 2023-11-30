@@ -1,28 +1,27 @@
 #include <Arduino.h>
-#include <Wire.h>
-#include <U8x8lib.h>
-#include "audio_manager.h"
 #include <LittleFS.h>
-#include "oled_manager.h"
 #include <ArduinoJson.h>
+#include "audio_manager.h"
+#include "oled_manager.h"
+#include "button_manager.h"
 #include "pins.h"
 
 #define DEFAULT_PRIORITY 5
 
 AudioManager am;
-OLEDManager oledMan;
+OLEDManager oled;
+ButtonManager buttons(LEFT_BUTTON, RIGHT_BUTTON, PAUSE_PLAY_BUTTON);
+
+bool isPlaying_g = false;
 
 void oledTask(void *params);
-void blinkLed(void *params);
+void buttonsTask(void *params);
 void updateAudioManager(void *params);
 
 void setup()
 {
   Serial.begin(115200);
   Serial.println("Starting...");
-
-  Wire.setPins((int)SDA, (int)SCL);
-  Wire.begin((int)SDA, (int)SCL);
 
   am.init();
   if (!LittleFS.begin())
@@ -37,20 +36,17 @@ void setup()
     am.stopSong();
   }
 
-  oledMan.begin();
+  oled.begin();
+  buttons.begin();
 
-  TaskHandle_t oled_task = NULL;
-  xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, &oled_task);
-
-  TaskHandle_t blink_led = NULL;
-  xTaskCreate(blinkLed, "blink", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, &blink_led);
-
-  TaskHandle_t audio_manager_update = NULL;
-  xTaskCreate(updateAudioManager, "audio_manager_update", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, &audio_manager_update);
+  xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, NULL);
+  xTaskCreate(updateAudioManager, "audio_manager_update", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, NULL);
+  xTaskCreate(buttonsTask, "buttons_manager", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, NULL);
 }
 
 void loop()
 {
+  /*Nothing here*/
 }
 
 void oledTask(void *params)
@@ -71,24 +67,10 @@ void oledTask(void *params)
       else
         elapsedTimeInSeconds++;
 
-      oledMan.displayAllComponents("Test 1@&", false, elapsedTimeInSeconds, totalTimeInSeconds);
+      oled.displayAllComponents("songName", isPlaying_g, elapsedTimeInSeconds, totalTimeInSeconds);
 
       lastTime = currTime;
     }
-  }
-
-  vTaskDelete(NULL);
-}
-
-void blinkLed(void *params)
-{
-  pinMode(2, OUTPUT);
-  while (true)
-  {
-    digitalWrite(2, HIGH);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    digitalWrite(2, LOW);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 
   vTaskDelete(NULL);
@@ -102,5 +84,22 @@ void updateAudioManager(void *params)
     am.update();
   }
 
+  vTaskDelete(NULL);
+}
+
+void buttonsTask(void *params){
+  
+  while (true)
+  {
+    switch(buttons.checkButtons())
+    {
+      case PAUSE_PLAY_BUTTON :
+        isPlaying_g = !isPlaying_g;
+        break;
+      default:
+        break;
+    }
+    vTaskDelay(5/portTICK_PERIOD_MS);
+  }
   vTaskDelete(NULL);
 }
