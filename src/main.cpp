@@ -12,6 +12,8 @@
 AudioManager am;
 OLEDManager oledMan;
 
+int player_increment_global = 0;
+
 void oledTask(void *params);
 void blinkLed(void *params);
 void updateAudioManager(void *params);
@@ -96,10 +98,16 @@ void blinkLed(void *params)
 
 void updateAudioManager(void *params)
 {
+  static int current_track = 0;
 
   while (true)
   {
     am.update();
+    if (is_to_change_g)
+    {
+      current_track = (current_track + player_increment_global) % NUMBER_OF_TRACKS;
+      am.playSong(current_track);
+    }
   }
 
   vTaskDelete(NULL);
