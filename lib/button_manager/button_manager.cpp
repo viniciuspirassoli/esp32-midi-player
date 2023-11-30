@@ -1,6 +1,6 @@
 #include "button_manager.h"
 
-ButtonManager::ButtonManager(int leftPin, int rightPin, int playPausePin) {
+ButtonManager::ButtonManager(unsigned short leftPin, unsigned short rightPin, unsigned short playPausePin) {
     leftButtonPin = leftPin;
     rightButtonPin = rightPin;
     playPauseButtonPin = playPausePin;
@@ -23,5 +23,9 @@ unsigned short ButtonManager::checkButtons() {
 
     if (digitalRead(playPauseButtonPin) == HIGH) {
         return playPauseButtonPin;
+    }
+    
+    else {
+        return 0;
     }
 }
