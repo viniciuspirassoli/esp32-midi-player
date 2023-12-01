@@ -23,16 +23,16 @@ unsigned short ButtonManager::checkButtons()
 
     if (digitalRead(rightButtonPin) == HIGH)
     {
-        return 0;
+        return 2;
     }
 
     if (digitalRead(playPauseButtonPin) == HIGH)
     {
-        return 1;
+        return 3;
     }
 
     else
     {
-        return -1;
+        return 0;
     }
 }

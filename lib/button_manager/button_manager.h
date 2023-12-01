@@ -1,9 +1,10 @@
 #ifndef BUTTON_MANAGER_HEADER
 #define BUTTON_MANAGER_HEADER
 
-#include <ArduinoJson.h>
+#include <Arduino.h>
 
-class ButtonManager {
+class ButtonManager
+{
 public:
     ButtonManager(unsigned short leftButtonPin, unsigned short rightButtonPin, unsigned short playPauseButtonPin);
     void begin();
@@ -15,4 +16,4 @@ private:
     unsigned short playPauseButtonPin;
 };
 
-#endif //BUTTON_MANAGER_HEADER
+#endif // BUTTON_MANAGER_HEADER
