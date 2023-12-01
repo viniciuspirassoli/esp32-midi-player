@@ -10,6 +10,9 @@
 int last_event[CHANNELS];
 int buzzers[] = {OUTPUT_1, OUTPUT_2, OUTPUT_3, OUTPUT_4};
 
+#define NUMBER_OF_MUSICS 3
+String songs_list[NUMBER_OF_MUSICS] = {"/careless_whisper.miniMid", "/scale.miniMid", "/smb_overworld.miniMid"};
+
 uint32_t AudioManager::noteToFrequency(int note)
 {
     return uint32_t(440 * exp2((note - 69) / 12.0));
@@ -17,42 +20,9 @@ uint32_t AudioManager::noteToFrequency(int note)
 
 AudioManager::AudioManager() {}
 
-bool AudioManager::playSong(int id, String &song_name)
+bool AudioManager::playSong(int id)
 {
-    String filename;
-    switch (id)
-    {
-    case 0:
-        filename = "/zelda_secret.miniMid";
-        break;
-    case 1:
-        filename = "/sonic_starlight_zone.miniMid";
-        break;
-    case 2:
-        filename = "/smb3_overworld.miniMid";
-        break;
-    case 3:
-        filename = "/smb_overworld.miniMid";
-        break;
-    case 4:
-        filename = "/mii_channel_theme.miniMid";
-        break;
-    case 5:
-        filename = "/zelda_overworld.miniMid";
-        break;
-    case 6:
-        filename = "/careless_whisper.miniMid";
-        break;
-    case 7:
-        filename = "/tetris_theme_a.miniMid";
-        break;
-    case 8:
-        filename = "/scale.miniMid";
-        break;
-    default:
-        playing = false;
-        return false;
-    }
+    String filename = songs_list[id];
 
     if (!this->song.load_from_file(filename))
     {
@@ -62,7 +32,6 @@ bool AudioManager::playSong(int id, String &song_name)
 
     this->restartPlayer();
 
-    // this->update();
     return true;
 }
 
@@ -75,53 +44,26 @@ void AudioManager::restartPlayer()
     init_time = millis();
 }
 
-void AudioManager::playTest()
-{
-    Song smb_song = Song(4);
+// String AudioManager::handleNoteRequest(StaticJsonDocument<200> doc)
+// {
+//     bool powered = doc["power"];
 
-    smb_song.active_channels = 4;
+//     if (powered)
+//     {
+//         double frequency = (double)doc["note"];
+//         tone(OUTPUT_1, frequency);
+//         return "Success";
+//     }
+//     else
+//     {
+//         noTone(OUTPUT_1);
+//         return "Success";
+//     }
 
-    int number_of_notes = 3;
-    int notes[3] = {142, 284, 213};
-    unsigned int durations[3] = {100, 100, 100};
-    unsigned int timestamps[3] = {0, 150, 300};
+//     return "Failure";
+// }
 
-    for (size_t i = 0; i < 4; i++)
-    {
-        Track &loop_track = smb_song.get_track(i);
-        loop_track.load_from_values(notes, timestamps, durations, 3);
-    }
-
-    this->song = smb_song;
-
-    playing = true;
-    for (int i = 0; i < CHANNELS; i++)
-        last_event[i] = 0;
-    init_time = millis();
-
-    // this->update();
-}
-
-String AudioManager::handleNoteRequest(StaticJsonDocument<200> doc)
-{
-    bool powered = doc["power"];
-
-    if (powered)
-    {
-        double frequency = (double)doc["note"];
-        tone(OUTPUT_1, frequency);
-        return "Success";
-    }
-    else
-    {
-        noTone(OUTPUT_1);
-        return "Success";
-    }
-
-    return "Failure";
-}
-
-void Audio::pauseSong()
+void AudioManager::pauseSong()
 {
     this->playing = !playing;
 }
@@ -155,6 +97,12 @@ void AudioManager::init()
     ledcAttachPin(OUTPUT_4, 4);
 }
 
+void AudioManager::skipSongs(int number_of_skips)
+{
+    current_song = (number_of_skips + current_song) % NUMBER_OF_MUSICS;
+    this->playSong(current_song);
+}
+
 void AudioManager::update()
 {
     if (!playing)
@@ -166,9 +114,6 @@ void AudioManager::update()
     { // i for channels (1 - 4)~
         Track &track = song.get_track(i);
         int cur_ev = last_event[i];
-
-        // Serial.print("Current event: ");
-        // Serial.println(cur_ev);
 
         if (cur_ev >= track.get_number_notes())
         {
@@ -199,28 +144,3 @@ void AudioManager::update()
         }
     }
 }
-
-// void AudioManager::update()
-// {
-//     note_t notes[8] = {NOTE_C, NOTE_D, NOTE_E, NOTE_F, NOTE_G, NOTE_A, NOTE_B, NOTE_C};
-
-//     int note = 0;
-
-//     while (true)
-//     {
-//         ledcWriteNote(1, notes[note], 4);
-//         ledcWriteNote(2, notes[(note + 2) % 8], 4);
-//         ledcWriteNote(3, notes[(note + 4) % 8], 4);
-//         ledcWriteNote(4, notes[(note + 6) % 8], 4);
-
-//         vTaskDelay(300 / portTICK_PERIOD_MS);
-//         ledcWriteTone(2, 0);
-//         ledcWriteTone(1, 0);
-//         ledcWriteTone(3, 0);
-//         ledcWriteTone(4, 0);
-//         vTaskDelay(300 / portTICK_PERIOD_MS);
-
-//         note++;
-//         note %= 8;
-//     }
-// }

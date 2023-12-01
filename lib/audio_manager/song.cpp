@@ -64,7 +64,8 @@ bool Song::load_from_file(String &filename)
         Track &loop_track = this->get_track(i);
         int track_number_of_notes = loop_track.load_from_file(file);
 
-        if (track_number_of_notes > max_number_of_notes) {
+        if (track_number_of_notes > max_number_of_notes)
+        {
             max_number_of_notes = track_number_of_notes;
             longest_track_id = i;
         }
@@ -77,6 +78,7 @@ bool Song::load_from_file(String &filename)
     }
 
     file.close();
+    this->name = filename;
 
     return true;
 }
@@ -97,6 +99,7 @@ void Song::serial_print()
     }
 }
 
-int Song::get_longest_track_id(){
+int Song::get_longest_track_id()
+{
     return longest_track_id;
 }

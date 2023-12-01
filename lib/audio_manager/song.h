@@ -14,6 +14,7 @@ private:
     int n_notes;
     int notes[MAX_PER_CHANNEL];
     unsigned int timestamps[MAX_PER_CHANNEL], durations[MAX_PER_CHANNEL];
+
 public:
     Track()
     {
@@ -39,6 +40,7 @@ class Song
 private:
     Track tracks[CHANNELS];
     int longest_track_id = 0;
+    String name;
 
 public:
     int n_tracks = 0, active_channels = 0;
@@ -54,6 +56,8 @@ public:
     int get_n_tracks() { return n_tracks; };
     int get_active_channels() { return n_tracks; };
     Track &get_track(int index) { return tracks[index]; };
+
+    String getName() { return name; };
 
     void serial_print();
     int get_longest_track_id();

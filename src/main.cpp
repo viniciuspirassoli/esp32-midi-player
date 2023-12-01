@@ -12,8 +12,6 @@ AudioManager am;
 OLEDManager oled;
 ButtonManager buttons(LEFT_BUTTON, RIGHT_BUTTON, PAUSE_PLAY_BUTTON);
 
-String current_song_name;
-
 void oledTask(void *params);
 void buttonsTask(void *params);
 void updateAudioManager(void *params);
@@ -67,7 +65,7 @@ void oledTask(void *params)
       else
         elapsedTimeInSeconds++;
 
-      oled.displayAllComponents(current_song_name.c_str(), isPlaying_g, elapsedTimeInSeconds, totalTimeInSeconds);
+      oled.displayAllComponents(am.getSong().getName().c_str(), am.isPlaying(), elapsedTimeInSeconds, totalTimeInSeconds);
 
       lastTime = currTime;
     }
@@ -83,11 +81,6 @@ void updateAudioManager(void *params)
   while (true)
   {
     am.update();
-    if (is_to_change_g)
-    {
-      current_track = (current_track + player_increment_global) % NUMBER_OF_TRACKS;
-      am.playSong(current_track);
-    }
   }
 
   vTaskDelete(NULL);
@@ -95,24 +88,21 @@ void updateAudioManager(void *params)
 
 void buttonsTask(void *params)
 {
-
   while (true)
   {
     switch (buttons.checkButtons())
     {
-    case -1:
-      current_track = --current_track % NUMBER_OF_TRACKS;
-      am.playSong(current_track, &current_song_name);
-      break;
     case 1:
-      current_track = ++current_track % NUMBER_OF_TRACKS;
-      am.playSong(current_track, &current_song_name);
+      am.skipSongs(1);
       break;
-    case 0:
+    case 2:
+      am.skipSongs(-1);
+      break;
+    case 3:
       am.pauseSong();
       break;
-
-    case default:
+    default:
+      Serial.print("Error: in buttonsTask");
       break;
     }
     vTaskDelay(5 / portTICK_PERIOD_MS);
