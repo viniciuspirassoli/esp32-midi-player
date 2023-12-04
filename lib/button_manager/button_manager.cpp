@@ -9,24 +9,24 @@ ButtonManager::ButtonManager(unsigned short leftPin, unsigned short rightPin, un
 
 void ButtonManager::begin()
 {
-    pinMode(leftButtonPin, INPUT);
-    pinMode(rightButtonPin, INPUT);
-    pinMode(playPauseButtonPin, INPUT);
+    pinMode(leftButtonPin, INPUT_PULLUP);
+    pinMode(rightButtonPin, INPUT_PULLUP);
+    pinMode(playPauseButtonPin, INPUT_PULLUP);
 }
 
 unsigned short ButtonManager::checkButtons()
 {
-    if (digitalRead(leftButtonPin) == HIGH)
+    if (digitalRead(leftButtonPin) == LOW)
     {
         return 1;
     }
 
-    if (digitalRead(rightButtonPin) == HIGH)
+    if (digitalRead(rightButtonPin) == LOW)
     {
         return 2;
     }
 
-    if (digitalRead(playPauseButtonPin) == HIGH)
+    if (digitalRead(playPauseButtonPin) == LOW)
     {
         return 3;
     }
