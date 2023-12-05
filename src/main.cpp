@@ -1,28 +1,34 @@
 #include <Arduino.h>
-#include <Wire.h>
-#include <U8x8lib.h>
-#include "audio_manager.h"
 #include <LittleFS.h>
-#include "oled_manager.h"
 #include <ArduinoJson.h>
+#include "audio_manager.h"
+#include "oled_manager.h"
+#include "button_manager.h"
 #include "pins.h"
 
-#define DEFAULT_PRIORITY 5
+#define DISPLAY_TASK_PERIOD_MS 200 
+#define BUTTONS_TASK_PERIOD_MS 50   
+#define MUSIC_TASK_PERIOD_MS   5
+
+#define DISPLAY_TASK_PRIORITY  1
+#define BUTTONS_TASK_PRIORITY  2
+#define MUSIC_TASK_PRIORITY    3
+
+int elapsedTimeInSeconds = 0, totalTimeInSeconds = 30; //Global variables
+
 
 AudioManager am;
-OLEDManager oledMan;
+OLEDManager oled;
+ButtonManager buttons(LEFT_BUTTON, RIGHT_BUTTON, PAUSE_PLAY_BUTTON);
 
 void oledTask(void *params);
-void blinkLed(void *params);
+void buttonsTask(void *params);
 void updateAudioManager(void *params);
 
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("Starting...");
-
-  Wire.setPins((int)SDA, (int)SCL);
-  Wire.begin((int)SDA, (int)SCL);
+  Serial.println("Starting the midi player...");
 
   am.init();
   if (!LittleFS.begin())
@@ -30,69 +36,51 @@ void setup()
     Serial.println("An Error has occurred while mounting SPIFFS");
     ESP.restart();
   }
-  int song_number = 3;
+  unsigned int song_number = 0;
   if (!am.playSong(song_number))
   {
     Serial.println("Error in loading the song!");
-    am.stopSong();
+    am.stopSong(false);
+    ESP.restart();
   }
 
-  oledMan.begin((int)SDA, (int)SCL);
+  oled.begin();
+  buttons.begin();
 
-  TaskHandle_t oled_task = NULL;
-  xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, &oled_task);
-
-  TaskHandle_t blink_led = NULL;
-  xTaskCreate(blinkLed, "blink", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, &blink_led);
-
-  TaskHandle_t audio_manager_update = NULL;
-  xTaskCreate(updateAudioManager, "audio_manager_update", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DEFAULT_PRIORITY, &audio_manager_update);
+  xTaskCreate(updateAudioManager, "audio_manager_update", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 5, NULL);
+  xTaskCreate(buttonsTask, "buttons_manager", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 5, NULL);
+  //xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
 }
 
 void loop()
 {
+  /*Nothing here*/
 }
 
 void oledTask(void *params)
 {
-  int elapsedTimeInSeconds = 0, totalTimeInSeconds = 30;
   unsigned long lastTime = millis();
-
   while (true)
   {
     unsigned long currTime = millis();
-    if (currTime >= lastTime + 1000UL)
+    if (currTime >= lastTime + 1000UL && am.isPlaying())
     {
 
-      if (elapsedTimeInSeconds > totalTimeInSeconds - 1)
+      if (elapsedTimeInSeconds > am.getSong().get_song_duration())
       {
         elapsedTimeInSeconds = 0;
       }
       else
         elapsedTimeInSeconds++;
 
-      oledMan.displayAllComponents("Test 1@&", false, elapsedTimeInSeconds, totalTimeInSeconds);
-
       lastTime = currTime;
     }
+    oled.displayAllComponents(am.getSong().getName().c_str(), am.isPlaying(), elapsedTimeInSeconds, am.getSong().get_song_duration());
+    vTaskDelay(DISPLAY_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
-
   vTaskDelete(NULL);
 }
 
-void blinkLed(void *params)
-{
-  pinMode(2, OUTPUT);
-  while (true)
-  {
-    digitalWrite(2, HIGH);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    digitalWrite(2, LOW);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
-
-  vTaskDelete(NULL);
-}
 
 void updateAudioManager(void *params)
 {
@@ -101,6 +89,27 @@ void updateAudioManager(void *params)
   {
     am.update();
   }
+  vTaskDelete(NULL);
+}
 
+void buttonsTask(void *params)
+{
+  while (true)
+  {
+    switch (buttons.checkButtons())
+    {
+    case 1:
+      //am.skipSongs(1);
+      break;
+    case 2:
+      //am.skipSongs(-1);
+      break;
+    case 3:
+      am.pauseSong();
+      break;
+    default:
+      break;
+    }
+  }
   vTaskDelete(NULL);
 }

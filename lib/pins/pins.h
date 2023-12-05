@@ -4,9 +4,9 @@
 
 #include "esp32_pinout.h" 
 
-// #define PAUSE_PLAY_BUTTON 5
-// #define LEFT_BUTTON 6
-// #define RIGHT_BUTTON 7
+#define PAUSE_PLAY_BUTTON GPIO18
+#define LEFT_BUTTON GPIO19
+#define RIGHT_BUTTON GPIO23
 
 #define OUTPUT_1 D5
 #define OUTPUT_2 TX2
