@@ -13,7 +13,7 @@ private:
 
     Song song;
 
-    unsigned long init_time;
+    unsigned long init_time = 0;
     unsigned long last_update = 0;
     int current_song = 0;
 
@@ -34,6 +34,11 @@ public:
     void playTest();
     Song &getSong() { return song; }
     void skipSongs(int number_of_skips);
+    unsigned long getCurrentTime()
+    {
+        return (this->last_update - this->init_time);
+        // return 10;
+    }
 
     void update();
 };

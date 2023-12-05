@@ -22,7 +22,7 @@ AudioManager::AudioManager() {}
 
 bool AudioManager::playSong(unsigned int id)
 {
-    if( id >= NUMBER_OF_MUSICS)
+    if (id >= NUMBER_OF_MUSICS)
     {
         Serial.println("Invalid id number");
         return false;
@@ -41,56 +41,6 @@ bool AudioManager::playSong(unsigned int id)
 
     return true;
 }
-
-
-// bool AudioManager::playSong(int id)
-// {
-//     String filename;
-//     switch (id)
-//     {
-//     case 0:
-//         filename = "/zelda_secret.miniMid";
-//         break;
-//     case 1:
-//         filename = "/sonic_starlight_zone.miniMid";
-//         break;
-//     case 2:
-//         filename = "/smb3_overworld.miniMid";
-//         break;
-//     case 3:
-//         filename = "/smb_overworld.miniMid";
-//         break;
-//     case 4:
-//         filename = "/mii_channel_theme.miniMid";
-//         break;
-//     case 5:
-//         filename = "/zelda_overworld.miniMid";
-//         break;
-//     case 6:
-//         filename = "/careless_whisper.miniMid";
-//         break;
-//     case 7:
-//         filename = "/tetris_theme_a.miniMid";
-//         break;
-//     case 8:
-//         filename = "/scale.miniMid";
-//         break;
-//     default:
-//         playing = false;
-//         return false;
-//     }
-
-//     if (!this->song.load_from_file(filename))
-//     {
-//         playing = false;
-//         return false;
-//     }
-
-//     this->restartPlayer();
-
-//     // this->update();
-//     return true;
-// }
 
 void AudioManager::restartPlayer()
 {
@@ -123,6 +73,11 @@ void AudioManager::restartPlayer()
 void AudioManager::pauseSong()
 {
     this->playing = !playing;
+
+    for (int i = 0; i < 4; i++)
+    {
+        ledcWriteTone(i + 1, 0);
+    }
 }
 
 void AudioManager::stopSong(bool go_to_next_song)
@@ -134,10 +89,11 @@ void AudioManager::stopSong(bool go_to_next_song)
         ledcWriteTone(i + 1, 0);
     }
 
-    if(go_to_next_song){
+    if (go_to_next_song)
+    {
         Serial.println("going to next song in the end of the music");
         // this->skipSongs(1);
-        this->playSong(1);
+        this->skipSongs(1);
     }
 }
 
@@ -194,14 +150,15 @@ void AudioManager::update()
 
         if (curr_time > track.get_timestamp(cur_ev))
         {
-            Serial.print("Played ");
-            Serial.print(track.get_note(cur_ev));
-            Serial.print(" for ");
-            Serial.print(track.get_duration(cur_ev));
-            Serial.print("ms");
+            // Serial.print("Played ");
+            // Serial.print(track.get_note(cur_ev));
+            // Serial.print(" for ");
+            // Serial.print(track.get_duration(cur_ev));
+            // Serial.print("ms");
+            // Serial.print(" - Frequency: ");
+            // Serial.println(freq);
+
             uint32_t freq = noteToFrequency(track.get_note(cur_ev));
-            Serial.print(" - Frequency: ");
-            Serial.println(freq);
             ledcWriteTone(i + 1, freq);
             last_event[i]++;
         }
