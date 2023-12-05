@@ -28,7 +28,7 @@ void updateAudioManager(void *params);
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("Starting...");
+  Serial.println("Starting the midi player...");
 
   am.init();
   if (!LittleFS.begin())
@@ -36,19 +36,20 @@ void setup()
     Serial.println("An Error has occurred while mounting SPIFFS");
     ESP.restart();
   }
-  int song_number = 3;
+  unsigned int song_number = 0;
   if (!am.playSong(song_number))
   {
     Serial.println("Error in loading the song!");
-    am.stopSong();
+    am.stopSong(false);
+    ESP.restart();
   }
 
   oled.begin();
   buttons.begin();
 
-  xTaskCreate(updateAudioManager, "audio_manager_update", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, MUSIC_TASK_PRIORITY, NULL);
-  xTaskCreate(buttonsTask, "buttons_manager", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, BUTTONS_TASK_PRIORITY, NULL);
-  xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
+  xTaskCreate(updateAudioManager, "audio_manager_update", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 5, NULL);
+  xTaskCreate(buttonsTask, "buttons_manager", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 5, NULL);
+  //xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
 }
 
 void loop()
@@ -61,12 +62,11 @@ void oledTask(void *params)
   unsigned long lastTime = millis();
   while (true)
   {
-    TickType_t previousWakeTime = xTaskGetTickCount();
     unsigned long currTime = millis();
     if (currTime >= lastTime + 1000UL && am.isPlaying())
     {
 
-      if (elapsedTimeInSeconds > totalTimeInSeconds - 1)
+      if (elapsedTimeInSeconds > am.getSong().get_song_duration())
       {
         elapsedTimeInSeconds = 0;
       }
@@ -75,8 +75,8 @@ void oledTask(void *params)
 
       lastTime = currTime;
     }
-    oled.displayAllComponents(am.getSong().getName().c_str(), am.isPlaying(), elapsedTimeInSeconds, totalTimeInSeconds);
-    vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(DISPLAY_TASK_PERIOD_MS));
+    oled.displayAllComponents(am.getSong().getName().c_str(), am.isPlaying(), elapsedTimeInSeconds, am.getSong().get_song_duration());
+    vTaskDelay(DISPLAY_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }
@@ -87,9 +87,7 @@ void updateAudioManager(void *params)
 
   while (true)
   {
-    TickType_t previousWakeTime = xTaskGetTickCount();
     am.update();
-    vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(MUSIC_TASK_PERIOD_MS));
   }
   vTaskDelete(NULL);
 }
@@ -98,23 +96,20 @@ void buttonsTask(void *params)
 {
   while (true)
   {
-    TickType_t previousWakeTime = xTaskGetTickCount();
     switch (buttons.checkButtons())
     {
     case 1:
-      am.skipSongs(1);
+      //am.skipSongs(1);
       break;
     case 2:
-      am.skipSongs(-1);
+      //am.skipSongs(-1);
       break;
     case 3:
       am.pauseSong();
       break;
     default:
-      Serial.println("No pressed buttons");
       break;
     }
-    vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(BUTTONS_TASK_PERIOD_MS));
   }
   vTaskDelete(NULL);
 }

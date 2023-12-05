@@ -18,16 +18,21 @@ unsigned short ButtonManager::checkButtons()
 {
     if (digitalRead(leftButtonPin) == LOW)
     {
+        Serial.println("leftButtonPin");
         return 1;
     }
 
     if (digitalRead(rightButtonPin) == LOW)
     {
+        Serial.println("rightButtonPin");
+
         return 2;
     }
 
     if (digitalRead(playPauseButtonPin) == LOW)
     {
+        Serial.println("pauseButtonPin");
+        
         return 3;
     }
 

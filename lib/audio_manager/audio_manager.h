@@ -27,9 +27,9 @@ public:
     String handleNoteRequest(StaticJsonDocument<200> doc);
     String handleSongRequest(StaticJsonDocument<200> doc);
 
-    bool playSong(int id);
+    bool playSong(unsigned int id);
     bool isPlaying() { return playing; }
-    void stopSong();
+    void stopSong(bool go_to_next_song);
     void pauseSong();
     void playTest();
     Song &getSong() { return song; }

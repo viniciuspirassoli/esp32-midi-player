@@ -28,6 +28,7 @@ public:
     unsigned int get_timestamp(int index) { return this->timestamps[index]; };
     unsigned int get_duration(int index) { return this->durations[index]; };
     int get_number_notes() { return this->n_notes; };
+    int get_track_duration() { return this->durations[this->n_notes - 1] + this->timestamps[this->n_notes - 1]; };
 
     // void set_note(int index, int note) {this->notes[index] = note;};
     // void set_timestamp(int index, unsigned int timestamp) {this->timestamps[index] = timestamp;};
@@ -61,6 +62,9 @@ public:
 
     void serial_print();
     int get_longest_track_id();
+    int get_song_duration() {
+        return tracks[this->get_longest_track_id()].get_track_duration() / 1000;
+    }
 };
 
 #endif
