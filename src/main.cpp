@@ -47,7 +47,7 @@ void setup()
   buttons.begin();
 
   xTaskCreate(updateAudioManager, "audio_manager_update", 1024 * 15, NULL, 5, NULL);
-  xTaskCreate(buttonsTask, "buttons_manager", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 6, NULL);
+  xTaskCreate(buttonsTask, "buttons_manager", 2 * CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 6, NULL);
   xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
 }
 
@@ -58,24 +58,10 @@ void loop()
 
 void oledTask(void *params)
 {
-  unsigned long lastTime = millis();
   while (true)
   {
-    unsigned long currTime = millis();
-    if (currTime >= lastTime + 1000UL && am.isPlaying())
-    {
-
-      if (elapsedTimeInSeconds > am.getSong().get_song_duration())
-      {
-        elapsedTimeInSeconds = 0;
-      }
-      else
-        elapsedTimeInSeconds++;
-
-      lastTime = currTime;
-    }
     // TODO OPT THIS
-    oled.displayAllComponents(am.getSong().getName().c_str(), am.isPlaying(), am.getCurrentTime(), am.getSong().get_song_duration());
+    oled.displayAllComponents(am.getSong().getName().c_str(), am.isPlaying(), (int) (am.getCurrentTime() / 1000) , am.getSong().get_song_duration());
     vTaskDelay(DISPLAY_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
@@ -98,20 +84,28 @@ void buttonsTask(void *params)
   {
     switch (buttons.checkButtons())
     {
-    case 1:
+    case GO_NEXT_SONG:
       am.skipSongs(1);
+      Serial.println("go next song");
+
       break;
-    case 2:
+    case GO_PREVIOUS_SONG:
       am.skipSongs(-1);
+      Serial.println("go prev song");
       break;
-    case 3:
-      Serial.println("am.skipSongs");
+    case PAUSE_SONG:
       am.pauseSong();
+      Serial.println("pausing song");
       break;
+    case UNPAUSE_SONG:
+      am.unpauseSong();
+      Serial.println("unpausing song");
+      break;
+
     default:
       break;
     }
-    vTaskDelay(DISPLAY_TASK_PERIOD_MS / portTICK_PERIOD_MS);
+    vTaskDelay(BUTTONS_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }

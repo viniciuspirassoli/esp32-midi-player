@@ -72,12 +72,19 @@ void AudioManager::restartPlayer()
 
 void AudioManager::pauseSong()
 {
-    this->playing = !playing;
-
+    this->pause_init_time = millis();
+    
+    this->playing = false;
     for (int i = 0; i < 4; i++)
     {
         ledcWriteTone(i + 1, 0);
     }
+}
+
+void AudioManager::unpauseSong() {
+    unsigned long delta_time = millis() - this->pause_init_time;
+    this->init_time += delta_time;
+    this->playing = true;
 }
 
 void AudioManager::stopSong(bool go_to_next_song)
@@ -124,8 +131,9 @@ void AudioManager::skipSongs(int number_of_skips)
 
 void AudioManager::update()
 {
-    if (!playing)
+    if (!playing){
         return;
+    }
 
     unsigned long curr_time = millis() - init_time;
 

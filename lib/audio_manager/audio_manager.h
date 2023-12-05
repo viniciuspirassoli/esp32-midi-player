@@ -16,6 +16,7 @@ private:
     unsigned long init_time = 0;
     unsigned long last_update = 0;
     int current_song = 0;
+    unsigned long pause_init_time = 0;
 
     uint32_t noteToFrequency(int note);
     void restartPlayer();
@@ -31,15 +32,16 @@ public:
     bool isPlaying() { return playing; }
     void stopSong(bool go_to_next_song);
     void pauseSong();
+    void unpauseSong();
     void playTest();
     Song &getSong() { return song; }
     void skipSongs(int number_of_skips);
     unsigned long getCurrentTime()
     {
-        return (this->last_update - this->init_time);
+        if (this->playing) return millis() - init_time;
+        else return (this->pause_init_time - init_time < 0UL) ? 0UL : this->pause_init_time - init_time;
         // return 10;
     }
-
     void update();
 };
 

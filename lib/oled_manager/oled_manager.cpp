@@ -65,7 +65,7 @@ void OLEDManager::drawProgressBar(int elapsedTimeInSecond , int totalDurationInS
 
   char buffer1[10], buffer2[10];
   secondsToMMSS(elapsedTimeInSecond, buffer1);
-  secondsToMMSS(totalDurationInSecond - elapsedTimeInSecond, buffer2);
+  secondsToMMSS(totalDurationInSecond /*- elapsedTimeInSecond*/, buffer2);
   oled->drawStr(13, 41, buffer1);
   oled->drawStr(95, 41, buffer2);
 }

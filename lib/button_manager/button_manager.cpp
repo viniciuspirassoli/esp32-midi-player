@@ -16,28 +16,35 @@ void ButtonManager::begin()
 
 unsigned short ButtonManager::checkButtons()
 {
-    if (digitalRead(leftButtonPin) == LOW)
+    if (digitalRead(leftButtonPin) == LOW && lastLeftButton == HIGH)
     {
-        Serial.println("leftButtonPin");
-        return 1;
+        lastLeftButton = LOW;
+        return GO_PREVIOUS_SONG;
     }
-
-    if (digitalRead(rightButtonPin) == LOW)
+    else if (digitalRead(leftButtonPin) == HIGH) lastLeftButton = HIGH;
+ 
+    if (digitalRead(rightButtonPin) == LOW && lastRightButton == HIGH)
     {
-        Serial.println("rightButtonPin");
-
-        return 2;
+        lastRightButton = LOW;
+        return GO_NEXT_SONG;
     }
+    else if (digitalRead(rightButtonPin) == HIGH) lastRightButton = HIGH;
 
-    if (digitalRead(playPauseButtonPin) == LOW)
-    {
-        Serial.println("pauseButtonPin");
+    if (digitalRead(playPauseButtonPin) == LOW && lastPauseButton == HIGH) // FE playPauseButton
+    {   
+        lastPauseButton = LOW;
+        if (!this->paused) {
+            this->paused = true;
+            return PAUSE_SONG;
+        }
         
-        return 3;
+        else
+        {
+            this->paused = false;
+            return UNPAUSE_SONG;
+        }
     }
+    else if (digitalRead(playPauseButtonPin) == HIGH) lastPauseButton = HIGH;  
 
-    else
-    {
-        return 0;
-    }
+    return DO_NOTHING;
 }
