@@ -59,7 +59,7 @@ if __name__ == "__main__":
         # print(len(stamps), end=' ')
         # print(len(durations))
 
-    f = open("mini_midi/" + filename + ".miniMid", "w")
+    f = open("data/" + filename + ".miniMid", "w")
     f.write(f"{len(song)}\n")
 
     for track in song:
