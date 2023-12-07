@@ -125,7 +125,7 @@ void buttonsTask(void *params)
     default:
       break;
     }
-    vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(BUTTONS_TASK_PERIOD_MS));
+    (&previousWakeTime, pdMS_TO_TICKS(BUTTONS_TASK_PERIOD_MS));
     // vTaskDelay(BUTTONS_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
