@@ -8,7 +8,7 @@
 
 #define DISPLAY_TASK_PERIOD_MS 200
 #define BUTTONS_TASK_PERIOD_MS 50
-#define TRACK_TASK_PERIOD_MS 10
+#define TRACK_TASK_PERIOD_MS 8
 
 AudioManager am;
 OLEDManager oled;
