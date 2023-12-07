@@ -11,7 +11,7 @@ int last_event[CHANNELS];
 int buzzers[] = {OUTPUT_1, OUTPUT_2, OUTPUT_3, OUTPUT_4};
 
 #define NUMBER_OF_SONGS 5
-String songs_list[NUMBER_OF_SONGS] = {"/careless_whisper.miniMid", "/scale.miniMid", "/smb_overworld.miniMid", 
+String songs_list[NUMBER_OF_SONGS] = {"/careless_whisper.miniMid", "/mii_channel_theme.miniMid", "/smb_overworld.miniMid", 
                                         "/zelda_overworld.miniMid", "/tetris_theme_a.miniMid"};
 
 uint32_t AudioManager::noteToFrequency(int note)
