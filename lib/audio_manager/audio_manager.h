@@ -25,8 +25,8 @@ public:
     AudioManager();
 
     void init();
-    String handleNoteRequest(StaticJsonDocument<200> doc);
-    String handleSongRequest(StaticJsonDocument<200> doc);
+    // String handleNoteRequest(StaticJsonDocument<200> doc);
+    // String handleSongRequest(StaticJsonDocument<200> doc);
     void update_track(int track_number);
 
     bool playSong(unsigned int id);

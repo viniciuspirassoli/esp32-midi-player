@@ -8,7 +8,7 @@
 
 #define DISPLAY_TASK_PERIOD_MS 200
 #define BUTTONS_TASK_PERIOD_MS 50
-#define TRACK_TASK_PERIOD_MS 8
+#define TRACK_TASK_PERIOD_MS 10
 
 AudioManager am;
 OLEDManager oled;
@@ -108,25 +108,25 @@ void buttonsTask(void *params)
     {
     case GO_NEXT_SONG:
       am.skipSongs(1);
-      Serial.println("go next song");
+      // Serial.println("go next song");
       break;
     case GO_PREVIOUS_SONG:
       am.skipSongs(-1);
-      Serial.println("go prev song");
+      // Serial.println("go prev song");
       break;
     case PAUSE_SONG:
       am.pauseSong();
-      Serial.println("pausing song");
+      // Serial.println("pausing song");
       break;
     case UNPAUSE_SONG:
       am.unpauseSong();
-      Serial.println("unpausing song");
+      // Serial.println("unpausing song");
       break;
     default:
       break;
     }
-    (&previousWakeTime, pdMS_TO_TICKS(BUTTONS_TASK_PERIOD_MS));
-    // vTaskDelay(BUTTONS_TASK_PERIOD_MS / portTICK_PERIOD_MS);
+    vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(BUTTONS_TASK_PERIOD_MS));
+    //vTaskDelay(BUTTONS_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }

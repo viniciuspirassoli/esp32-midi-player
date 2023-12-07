@@ -10,8 +10,9 @@
 int last_event[CHANNELS];
 int buzzers[] = {OUTPUT_1, OUTPUT_2, OUTPUT_3, OUTPUT_4};
 
-#define NUMBER_OF_MUSICS 3
-String songs_list[NUMBER_OF_MUSICS] = {"/careless_whisper.miniMid", "/scale.miniMid", "/smb_overworld.miniMid"};
+#define NUMBER_OF_SONGS 5
+String songs_list[NUMBER_OF_SONGS] = {"/careless_whisper.miniMid", "/scale.miniMid", "/smb_overworld.miniMid", 
+                                        "/zelda_overworld.miniMid", "/tetris_theme_a.miniMid"};
 
 uint32_t AudioManager::noteToFrequency(int note)
 {
@@ -22,7 +23,7 @@ AudioManager::AudioManager() {}
 
 bool AudioManager::playSong(unsigned int id)
 {
-    if (id >= NUMBER_OF_MUSICS)
+    if (id >= NUMBER_OF_SONGS)
     {
         current_song = 0;
         Serial.println("Invalid id number");
@@ -51,25 +52,6 @@ void AudioManager::restartPlayer()
         last_event[i] = 0;
     init_time = millis();
 }
-
-// String AudioManager::handleNoteRequest(StaticJsonDocument<200> doc)
-// {
-//     bool powered = doc["power"];
-
-//     if (powered)
-//     {
-//         double frequency = (double)doc["note"];
-//         tone(OUTPUT_1, frequency);
-//         return "Success";
-//     }
-//     else
-//     {
-//         noTone(OUTPUT_1);
-//         return "Success";
-//     }
-
-//     return "Failure";
-// }
 
 void AudioManager::pauseSong()
 {
@@ -106,11 +88,11 @@ void AudioManager::stopSong(bool go_to_next_song)
     }
 }
 
-String AudioManager::handleSongRequest(StaticJsonDocument<200> doc)
-{
-    playSong(doc["id"]);
-    return "Success";
-}
+// String AudioManager::handleSongRequest(StaticJsonDocument<200> doc)
+// {
+//     playSong(doc["id"]);
+//     return "Success";
+// }
 
 void AudioManager::init()
 {
@@ -127,7 +109,7 @@ void AudioManager::init()
 
 void AudioManager::skipSongs(int number_of_skips)
 {
-    current_song = (number_of_skips + current_song) % NUMBER_OF_MUSICS;
+    current_song = (number_of_skips + current_song) % NUMBER_OF_SONGS;
     this->playSong(current_song);
 }
 
