@@ -24,6 +24,7 @@ bool AudioManager::playSong(unsigned int id)
 {
     if (id >= NUMBER_OF_MUSICS)
     {
+        current_song = 0;
         Serial.println("Invalid id number");
         return false;
     }
@@ -73,7 +74,7 @@ void AudioManager::restartPlayer()
 void AudioManager::pauseSong()
 {
     this->pause_init_time = millis();
-    
+
     this->playing = false;
     for (int i = 0; i < 4; i++)
     {
@@ -81,7 +82,8 @@ void AudioManager::pauseSong()
     }
 }
 
-void AudioManager::unpauseSong() {
+void AudioManager::unpauseSong()
+{
     unsigned long delta_time = millis() - this->pause_init_time;
     this->init_time += delta_time;
     this->playing = true;
@@ -131,44 +133,66 @@ void AudioManager::skipSongs(int number_of_skips)
 
 void AudioManager::update()
 {
-    if (!playing){
+    if (!playing)
+    {
         return;
     }
 
     unsigned long curr_time = millis() - init_time;
 
     for (int i = 0; i < song.get_active_channels(); i++)
-    { // i for channels (1 - 4)~
-        Track &track = song.get_track(i);
-        int cur_ev = last_event[i];
+    {
+        // i for channels (1 - 4)~
+        update_track(i);
+    }
+}
 
-        if (cur_ev >= track.get_number_notes())
+void AudioManager::update_track(int track_number)
+{
+    if (!playing)
+    {
+        return;
+    }
+
+    unsigned long curr_time = millis() - init_time;
+
+    Track &track = song.get_track(track_number);
+    int cur_ev = last_event[track_number];
+
+    if (cur_ev >= track.get_number_notes())
+    {
+        if (song.get_longest_track_id() == track_number)
         {
-            if (song.get_longest_track_id() == i)
-            {
-                this->stopSong(true);
-                Serial.println("Stopped song");
-            }
-            continue;
+            this->stopSong(true);
+            Serial.println("Stopped song");
         }
+        return;
+    }
 
-        // Serial.print("Next timestamp: ");
-        // Serial.println(track.get_timestamp(cur_ev));
-        // Serial.println(curr_time);
+    // Serial.print("Next timestamp: ");
+    // Serial.println(track.get_timestamp(cur_ev));
+    // Serial.println(curr_time);
 
-        if (curr_time > track.get_timestamp(cur_ev))
-        {
-            // Serial.print("Played ");
-            // Serial.print(track.get_note(cur_ev));
-            // Serial.print(" for ");
-            // Serial.print(track.get_duration(cur_ev));
-            // Serial.print("ms");
-            // Serial.print(" - Frequency: ");
-            // Serial.println(freq);
+    if (curr_time > track.get_timestamp(cur_ev))
+    {
+        // Serial.print("Played ");
+        // Serial.print(track.get_note(cur_ev));
+        // Serial.print(" for ");
+        // Serial.print(track.get_duration(cur_ev));
+        // Serial.print("ms");
+        // Serial.print(" - Frequency: ");
+        // Serial.println(freq);
 
-            uint32_t freq = noteToFrequency(track.get_note(cur_ev));
-            ledcWriteTone(i + 1, freq);
-            last_event[i]++;
-        }
+        uint32_t freq = noteToFrequency(track.get_note(cur_ev));
+        ledcWriteTone(track_number + 1, freq);
+        last_event[track_number]++;
+
+        return;
+    }
+
+    if ((cur_ev > 0) && (curr_time > track.get_timestamp(cur_ev - 1) + track.get_duration(cur_ev - 1)))
+    {
+        // stop buzzer
+        ledcWriteTone(track_number + 1, 0);
     }
 }

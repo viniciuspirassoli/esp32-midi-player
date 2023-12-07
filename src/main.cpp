@@ -8,13 +8,7 @@
 
 #define DISPLAY_TASK_PERIOD_MS 200
 #define BUTTONS_TASK_PERIOD_MS 50
-#define MUSIC_TASK_PERIOD_MS 5
-
-#define DISPLAY_TASK_PRIORITY 1
-#define BUTTONS_TASK_PRIORITY 2
-#define MUSIC_TASK_PRIORITY 3
-
-int elapsedTimeInSeconds = 0, totalTimeInSeconds = 30; // Global variables
+#define TRACK_TASK_PERIOD_MS 8
 
 AudioManager am;
 OLEDManager oled;
@@ -22,7 +16,11 @@ ButtonManager buttons(LEFT_BUTTON, RIGHT_BUTTON, PAUSE_PLAY_BUTTON);
 
 void oledTask(void *params);
 void buttonsTask(void *params);
-void updateAudioManager(void *params);
+// void updateAudioManager(void *params);
+void trackOneUpdate(void *params);
+void trackTwoUpdate(void *params);
+void trackThreeUpdate(void *params);
+void trackFourUpdate(void *params);
 
 void setup()
 {
@@ -46,9 +44,13 @@ void setup()
   oled.begin();
   buttons.begin();
 
-  xTaskCreate(updateAudioManager, "audio_manager_update", 1024 * 15, NULL, 5, NULL);
+  xTaskCreate(trackOneUpdate, "track_1_update", 1024 * 4, NULL, 5, NULL);
+  xTaskCreate(trackTwoUpdate, "track_2_update", 1024 * 4, NULL, 3, NULL);
+  xTaskCreate(trackThreeUpdate, "track_3_update", 1024 * 4, NULL, 2, NULL);
+  xTaskCreate(trackFourUpdate, "track_4_update", 1024 * 4, NULL, 4, NULL);
+
   xTaskCreate(buttonsTask, "buttons_manager", 2 * CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 6, NULL);
-  xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
+  xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 1, NULL);
 }
 
 void loop()
@@ -58,28 +60,48 @@ void loop()
 
 void oledTask(void *params)
 {
+  TickType_t previousWakeTime = xTaskGetTickCount();
   while (true)
   {
-    // TODO OPT THIS
-    oled.displayAllComponents(am.getSong().getName().c_str(), am.isPlaying(), (int) (am.getCurrentTime() / 1000) , am.getSong().get_song_duration());
-    vTaskDelay(DISPLAY_TASK_PERIOD_MS / portTICK_PERIOD_MS);
+    oled.displayAllComponents(am.getSong().getName().c_str(), am.isPlaying(), (int)(am.getCurrentTime() / 1000), am.getSong().get_song_duration());
+    vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(DISPLAY_TASK_PERIOD_MS));
+    // vTaskDelay(DISPLAY_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }
 
-void updateAudioManager(void *params)
+inline void trackUpdate(int i)
 {
-
+  TickType_t previousWakeTime = xTaskGetTickCount();
   while (true)
   {
-    am.update();
-    vTaskDelay(8 / portTICK_PERIOD_MS);
+    am.update_track(i);
+    vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(TRACK_TASK_PERIOD_MS));
+    // vTaskDelay(8 / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
+}
+
+void trackOneUpdate(void *params)
+{
+  trackUpdate(0);
+}
+void trackTwoUpdate(void *params)
+{
+  trackUpdate(1);
+}
+void trackThreeUpdate(void *params)
+{
+  trackUpdate(2);
+}
+void trackFourUpdate(void *params)
+{
+  trackUpdate(3);
 }
 
 void buttonsTask(void *params)
 {
+  TickType_t previousWakeTime = xTaskGetTickCount();
   while (true)
   {
     switch (buttons.checkButtons())
@@ -87,7 +109,6 @@ void buttonsTask(void *params)
     case GO_NEXT_SONG:
       am.skipSongs(1);
       Serial.println("go next song");
-
       break;
     case GO_PREVIOUS_SONG:
       am.skipSongs(-1);
@@ -101,11 +122,11 @@ void buttonsTask(void *params)
       am.unpauseSong();
       Serial.println("unpausing song");
       break;
-
     default:
       break;
     }
-    vTaskDelay(BUTTONS_TASK_PERIOD_MS / portTICK_PERIOD_MS);
+    vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(BUTTONS_TASK_PERIOD_MS));
+    // vTaskDelay(BUTTONS_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }

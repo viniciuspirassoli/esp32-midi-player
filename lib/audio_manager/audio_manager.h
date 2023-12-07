@@ -27,6 +27,7 @@ public:
     void init();
     String handleNoteRequest(StaticJsonDocument<200> doc);
     String handleSongRequest(StaticJsonDocument<200> doc);
+    void update_track(int track_number);
 
     bool playSong(unsigned int id);
     bool isPlaying() { return playing; }
@@ -38,8 +39,10 @@ public:
     void skipSongs(int number_of_skips);
     unsigned long getCurrentTime()
     {
-        if (this->playing) return millis() - init_time;
-        else return (this->pause_init_time - init_time < 0UL) ? 0UL : this->pause_init_time - init_time;
+        if (this->playing)
+            return millis() - init_time;
+        else
+            return (this->pause_init_time - init_time < 0UL) ? 0UL : this->pause_init_time - init_time;
         // return 10;
     }
     void update();
