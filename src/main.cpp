@@ -93,7 +93,7 @@ void buttonsTask(void *params)
       // Serial.println("go next song");
       break;
     case GO_PREVIOUS_SONG:
-      am.skipSongs(-1);
+      am.skipSongs(NUMBER_OF_SONGS - 1);
       // Serial.println("go prev song");
       break;
     case PAUSE_SONG:

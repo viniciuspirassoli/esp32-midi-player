@@ -66,6 +66,11 @@ void AudioManager::pauseSong()
 
 void AudioManager::unpauseSong()
 {
+    if (true == this->playing)
+    {
+        return;
+    }
+
     unsigned long delta_time = millis() - this->pause_init_time;
     this->init_time += delta_time;
     this->playing = true;
@@ -109,6 +114,7 @@ void AudioManager::init()
 
 void AudioManager::skipSongs(int number_of_skips)
 {
+    this->unpauseSong();
     for (int i = 0; i < 4; i++)
     {
         ledcWriteTone(i + 1, 0);

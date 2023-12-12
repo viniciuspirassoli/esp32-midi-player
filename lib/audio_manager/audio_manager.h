@@ -3,6 +3,8 @@
 
 #include <ArduinoJson.h>
 
+#define NUMBER_OF_SONGS 6
+
 #include "song.h"
 
 class AudioManager

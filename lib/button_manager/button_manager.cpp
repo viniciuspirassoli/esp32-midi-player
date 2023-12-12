@@ -19,32 +19,38 @@ unsigned short ButtonManager::checkButtons()
     if (digitalRead(leftButtonPin) == LOW && lastLeftButton == HIGH)
     {
         lastLeftButton = LOW;
+        this->paused = false;
         return GO_PREVIOUS_SONG;
     }
-    else if (digitalRead(leftButtonPin) == HIGH) lastLeftButton = HIGH;
- 
+    else if (digitalRead(leftButtonPin) == HIGH)
+        lastLeftButton = HIGH;
+
     if (digitalRead(rightButtonPin) == LOW && lastRightButton == HIGH)
     {
         lastRightButton = LOW;
+        this->paused = false;
         return GO_NEXT_SONG;
     }
-    else if (digitalRead(rightButtonPin) == HIGH) lastRightButton = HIGH;
+    else if (digitalRead(rightButtonPin) == HIGH)
+        lastRightButton = HIGH;
 
     if (digitalRead(playPauseButtonPin) == LOW && lastPauseButton == HIGH) // FE playPauseButton
-    {   
+    {
         lastPauseButton = LOW;
-        if (!this->paused) {
+        if (!this->paused)
+        {
             this->paused = true;
             return PAUSE_SONG;
         }
-        
+
         else
         {
             this->paused = false;
             return UNPAUSE_SONG;
         }
     }
-    else if (digitalRead(playPauseButtonPin) == HIGH) lastPauseButton = HIGH;  
+    else if (digitalRead(playPauseButtonPin) == HIGH)
+        lastPauseButton = HIGH;
 
     return DO_NOTHING;
 }
