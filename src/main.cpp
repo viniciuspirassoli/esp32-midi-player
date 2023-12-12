@@ -18,7 +18,7 @@ void oledTask(void *params);
 void buttonsTask(void *params);
 // void updateAudioManager(void *params);
 void trackUpdate(void *params);
-int param1 = 1, param2 = 2, param3 = 3, param4 = 4;
+int param1 = 0, param2 = 1, param3 = 2, param4 = 3;
 
 void setup()
 {
@@ -42,10 +42,10 @@ void setup()
   oled.begin();
   buttons.begin();
 
-  xTaskCreate(trackUpdate, "track_1_update", 1024 * 4, (void*)&param1, 5, NULL);
-  xTaskCreate(trackUpdate, "track_2_update", 1024 * 4, (void*)&param2, 3, NULL);
-  xTaskCreate(trackUpdate, "track_3_update", 1024 * 4, (void*)&param3, 2, NULL);
-  xTaskCreate(trackUpdate, "track_4_update", 1024 * 4, (void*)&param4, 4, NULL);
+  xTaskCreate(trackUpdate, "track_1_update", 1024 * 4, (void *)&param1, 5, NULL);
+  xTaskCreate(trackUpdate, "track_2_update", 1024 * 4, (void *)&param2, 3, NULL);
+  xTaskCreate(trackUpdate, "track_3_update", 1024 * 4, (void *)&param3, 2, NULL);
+  xTaskCreate(trackUpdate, "track_4_update", 1024 * 4, (void *)&param4, 4, NULL);
 
   xTaskCreate(buttonsTask, "buttons_manager", 2 * CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 6, NULL);
   xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 1, NULL);
@@ -68,9 +68,9 @@ void oledTask(void *params)
   vTaskDelete(NULL);
 }
 
-void trackUpdate(void* params)
+void trackUpdate(void *params)
 {
-  int i = *((int*) params); 
+  int i = *((int *)params);
   TickType_t previousWakeTime = xTaskGetTickCount();
   while (true)
   {
@@ -108,7 +108,7 @@ void buttonsTask(void *params)
       break;
     }
     vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(BUTTONS_TASK_PERIOD_MS));
-    //vTaskDelay(BUTTONS_TASK_PERIOD_MS / portTICK_PERIOD_MS);
+    // vTaskDelay(BUTTONS_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }

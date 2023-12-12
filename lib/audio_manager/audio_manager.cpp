@@ -10,9 +10,9 @@
 int last_event[CHANNELS];
 int buzzers[] = {OUTPUT_1, OUTPUT_2, OUTPUT_3, OUTPUT_4};
 
-#define NUMBER_OF_SONGS 5
-String songs_list[NUMBER_OF_SONGS] = {"/careless_whisper.miniMid", "/mii_channel_theme.miniMid", "/smb_overworld.miniMid", 
-                                        "/zelda_overworld.miniMid", "/tetris_theme_a.miniMid"};
+#define NUMBER_OF_SONGS 6
+String songs_list[NUMBER_OF_SONGS] = {"/scale.miniMid", "/careless_whisper.miniMid", "/mii_channel_theme.miniMid", "/smb_overworld.miniMid",
+                                      "/zelda_overworld.miniMid", "/tetris_theme_a.miniMid"};
 
 uint32_t AudioManager::noteToFrequency(int note)
 {
@@ -109,6 +109,10 @@ void AudioManager::init()
 
 void AudioManager::skipSongs(int number_of_skips)
 {
+    for (int i = 0; i < 4; i++)
+    {
+        ledcWriteTone(i + 1, 0);
+    }
     current_song = (number_of_skips + current_song) % NUMBER_OF_SONGS;
     this->playSong(current_song);
 }
@@ -131,7 +135,7 @@ void AudioManager::update()
 
 void AudioManager::update_track(int track_number)
 {
-    if (!playing)
+    if (!playing || track_number >= song.get_active_channels())
     {
         return;
     }
@@ -148,6 +152,12 @@ void AudioManager::update_track(int track_number)
             this->stopSong(true);
             Serial.println("Stopped song");
         }
+
+        if ((cur_ev > 0) && (curr_time > track.get_timestamp(cur_ev - 1) + track.get_duration(cur_ev - 1)))
+        {
+            // stop buzzer
+            ledcWriteTone(track_number + 1, 0);
+        }
         return;
     }
 
@@ -157,17 +167,18 @@ void AudioManager::update_track(int track_number)
 
     if (curr_time > track.get_timestamp(cur_ev))
     {
-        // Serial.print("Played ");
-        // Serial.print(track.get_note(cur_ev));
-        // Serial.print(" for ");
-        // Serial.print(track.get_duration(cur_ev));
-        // Serial.print("ms");
-        // Serial.print(" - Frequency: ");
-        // Serial.println(freq);
 
         uint32_t freq = noteToFrequency(track.get_note(cur_ev));
         ledcWriteTone(track_number + 1, freq);
         last_event[track_number]++;
+
+        Serial.print("Played ");
+        Serial.print(track.get_note(cur_ev));
+        Serial.print(" for ");
+        Serial.print(track.get_duration(cur_ev));
+        Serial.print("ms");
+        Serial.print(" - Frequency: ");
+        Serial.println(freq);
 
         return;
     }
