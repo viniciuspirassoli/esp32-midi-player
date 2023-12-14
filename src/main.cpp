@@ -7,7 +7,7 @@
 #include "pins.h"
 
 // Uncomment for task execution time stats
-// #define MEASURE_STATS
+#define MEASURE_STATS
 
 #define DISPLAY_TASK_PERIOD_MS 200
 #define BUTTONS_TASK_PERIOD_MS 50
@@ -21,6 +21,13 @@ void oledTask(void *params);
 void buttonsTask(void *params);
 void trackUpdate(void *params);
 int param1 = 0, param2 = 1, param3 = 2, param4 = 3;
+
+#ifdef MEASURE_STATS
+#define MEASURE_TASK_PERIOD_MS 100
+volatile unsigned long measurements[6] = {0, 0, 0, 0, 0, 0};
+void printMeasurements(void *params);
+// track1, track2, track3, track4, buttons, oled
+#endif // MEASURE_STATS
 
 void setup()
 {
@@ -52,6 +59,10 @@ void setup()
   xTaskCreate(buttonsTask, "buttons_manager", 2 * CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 6, NULL);
   xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 1, NULL);
 
+  #ifdef MEASURE_STATS
+  xTaskCreate(printMeasurements, "measurements", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 7, NULL);
+  #endif
+
 }
 
 void loop()
@@ -65,7 +76,7 @@ void oledTask(void *params)
   while (true)
   {
     #ifdef MEASURE_STATS
-    TickType_t currTime = xTaskGetTickCount();
+    unsigned long currTime = micros();
     #endif
 
     oled.displayAllComponents(am.getSong().getName().c_str(), 
@@ -73,8 +84,8 @@ void oledTask(void *params)
                               am.getSong().get_song_duration());
 
     #ifdef MEASURE_STATS                          
-    TickType_t execTime = xTaskGetTickCount() - currTime;
-    Serial.print("oledTask "); Serial.println(execTime);
+    unsigned long execTime = micros() - currTime;
+    measurements[5] = execTime;
     #endif
 
     vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(DISPLAY_TASK_PERIOD_MS));
@@ -89,14 +100,14 @@ void trackUpdate(void *params)
   while (true)
   {
     #ifdef MEASURE_STATS
-    TickType_t currTime = xTaskGetTickCount();
+    unsigned long currTime = micros();
     #endif
 
     am.update_track(i);
 
     #ifdef MEASURE_STATS                          
-    TickType_t execTime = xTaskGetTickCount() - currTime;
-    Serial.print("trackUpdate"); Serial.print(i); Serial.print(" "); Serial.println(execTime);
+    unsigned long execTime = micros() - currTime;
+    measurements[i] = execTime;
     #endif
 
     vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(TRACK_TASK_PERIOD_MS));
@@ -110,7 +121,7 @@ void buttonsTask(void *params)
   while (true)
   {
     #ifdef MEASURE_STATS
-    TickType_t currTime = xTaskGetTickCount();
+    unsigned long currTime = micros();
     #endif
 
     switch (buttons.checkButtons())
@@ -136,11 +147,25 @@ void buttonsTask(void *params)
     }
     
     #ifdef MEASURE_STATS
-    TickType_t execTime = xTaskGetTickCount() - currTime;
-    Serial.print("buttonsTask "); Serial.println(execTime);
+    unsigned long execTime = micros() - currTime;
+    measurements[4] = execTime;
     #endif
 
     vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(BUTTONS_TASK_PERIOD_MS));
   }
   vTaskDelete(NULL);
 }
+
+#ifdef MEASURE_STATS
+void printMeasurements(void *params) {
+  TickType_t previousWakeTime = xTaskGetTickCount();
+  while(true) {
+    for (int i = 0; i < 6; i++) {
+      Serial.print(measurements[i]);
+      Serial.print(" ");
+    }
+    Serial.println();
+  }
+  vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(MEASURE_TASK_PERIOD_MS));
+}
+#endif //MEASURE_STATS
