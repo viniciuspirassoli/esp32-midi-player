@@ -6,6 +6,9 @@
 #include "button_manager.h"
 #include "pins.h"
 
+// Uncomment for task execution time stats
+// #define MEASURE_STATS
+
 #define DISPLAY_TASK_PERIOD_MS 200
 #define BUTTONS_TASK_PERIOD_MS 50
 #define TRACK_TASK_PERIOD_MS 8
@@ -16,7 +19,6 @@ ButtonManager buttons(LEFT_BUTTON, RIGHT_BUTTON, PAUSE_PLAY_BUTTON);
 
 void oledTask(void *params);
 void buttonsTask(void *params);
-// void updateAudioManager(void *params);
 void trackUpdate(void *params);
 int param1 = 0, param2 = 1, param3 = 2, param4 = 3;
 
@@ -43,12 +45,13 @@ void setup()
   buttons.begin();
 
   xTaskCreate(trackUpdate, "track_1_update", 1024 * 4, (void *)&param1, 5, NULL);
-  xTaskCreate(trackUpdate, "track_2_update", 1024 * 4, (void *)&param2, 3, NULL);
-  xTaskCreate(trackUpdate, "track_3_update", 1024 * 4, (void *)&param3, 2, NULL);
-  xTaskCreate(trackUpdate, "track_4_update", 1024 * 4, (void *)&param4, 4, NULL);
+  xTaskCreate(trackUpdate, "track_2_update", 1024 * 4, (void *)&param2, 5, NULL);
+  xTaskCreate(trackUpdate, "track_3_update", 1024 * 4, (void *)&param3, 5, NULL);
+  xTaskCreate(trackUpdate, "track_4_update", 1024 * 4, (void *)&param4, 5, NULL);
 
   xTaskCreate(buttonsTask, "buttons_manager", 2 * CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 6, NULL);
   xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 1, NULL);
+
 }
 
 void loop()
@@ -61,9 +64,20 @@ void oledTask(void *params)
   TickType_t previousWakeTime = xTaskGetTickCount();
   while (true)
   {
-    oled.displayAllComponents(am.getSong().getName().c_str(), am.isPlaying(), (int)(am.getCurrentTime() / 1000), am.getSong().get_song_duration());
+    #ifdef MEASURE_STATS
+    TickType_t currTime = xTaskGetTickCount();
+    #endif
+
+    oled.displayAllComponents(am.getSong().getName().c_str(), 
+                              am.isPlaying(), (int)(am.getCurrentTime() / 1000), 
+                              am.getSong().get_song_duration());
+
+    #ifdef MEASURE_STATS                          
+    TickType_t execTime = xTaskGetTickCount() - currTime;
+    Serial.print("oledTask "); Serial.println(execTime);
+    #endif
+
     vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(DISPLAY_TASK_PERIOD_MS));
-    // vTaskDelay(DISPLAY_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }
@@ -74,9 +88,18 @@ void trackUpdate(void *params)
   TickType_t previousWakeTime = xTaskGetTickCount();
   while (true)
   {
+    #ifdef MEASURE_STATS
+    TickType_t currTime = xTaskGetTickCount();
+    #endif
+
     am.update_track(i);
+
+    #ifdef MEASURE_STATS                          
+    TickType_t execTime = xTaskGetTickCount() - currTime;
+    Serial.print("trackUpdate"); Serial.print(i); Serial.print(" "); Serial.println(execTime);
+    #endif
+
     vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(TRACK_TASK_PERIOD_MS));
-    // vTaskDelay(8 / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }
@@ -86,6 +109,10 @@ void buttonsTask(void *params)
   TickType_t previousWakeTime = xTaskGetTickCount();
   while (true)
   {
+    #ifdef MEASURE_STATS
+    TickType_t currTime = xTaskGetTickCount();
+    #endif
+
     switch (buttons.checkButtons())
     {
     case GO_NEXT_SONG:
@@ -107,8 +134,13 @@ void buttonsTask(void *params)
     default:
       break;
     }
+    
+    #ifdef MEASURE_STATS
+    TickType_t execTime = xTaskGetTickCount() - currTime;
+    Serial.print("buttonsTask "); Serial.println(execTime);
+    #endif
+
     vTaskDelayUntil(&previousWakeTime, pdMS_TO_TICKS(BUTTONS_TASK_PERIOD_MS));
-    // vTaskDelay(BUTTONS_TASK_PERIOD_MS / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }

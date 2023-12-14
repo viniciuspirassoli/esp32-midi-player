@@ -55,13 +55,13 @@ bool Song::load_from_file(String &filename)
         Serial.println("Failed to open file: " + filename);
         return false;
     }
-    Serial.println("Opened " + filename + " (" + file.size() + ")");
+    // Serial.println("Opened " + filename + " (" + file.size() + ")");
 
     this->n_tracks = file.parseInt();
     this->active_channels = min(CHANNELS, n_tracks);
 
-    Serial.print("Tracks: ");
-    Serial.println(n_tracks);
+    // Serial.print("Tracks: ");
+    // Serial.println(n_tracks);
 
     unsigned int higher_track_end = 0;
     longest_track_id = 0;
@@ -71,11 +71,11 @@ bool Song::load_from_file(String &filename)
         Track &loop_track = this->get_track(i);
         int track_number_of_notes = loop_track.load_from_file(file);
 
-        Serial.print("Track ");
-        Serial.print(i + 1);
-        Serial.print(" has ");
-        Serial.print(loop_track.get_number_notes());
-        Serial.println(" notes");
+        // Serial.print("Track ");
+        // Serial.print(i + 1);
+        // Serial.print(" has ");
+        // Serial.print(loop_track.get_number_notes());
+        // Serial.println(" notes");
 
         int last_note_index = loop_track.get_number_notes() - 1;
         int track_end = loop_track.get_timestamp(last_note_index) + loop_track.get_duration(last_note_index);

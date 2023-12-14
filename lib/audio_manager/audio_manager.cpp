@@ -1,7 +1,6 @@
 #include "audio_manager.h"
 
 #include <Arduino.h>
-// #include <JsonTranslator.h>
 #include <LittleFS.h>
 #include <string>
 
@@ -87,7 +86,7 @@ void AudioManager::stopSong(bool go_to_next_song)
 
     if (go_to_next_song)
     {
-        Serial.println("going to next song in the end of the music");
+        // Serial.println("going to next song in the end of the music");
         // this->skipSongs(1);
         this->skipSongs(1);
     }
@@ -156,7 +155,7 @@ void AudioManager::update_track(int track_number)
         if (song.get_longest_track_id() == track_number)
         {
             this->stopSong(true);
-            Serial.println("Stopped song");
+            // Serial.println("Stopped song");
         }
 
         if ((cur_ev > 0) && (curr_time > track.get_timestamp(cur_ev - 1) + track.get_duration(cur_ev - 1)))
@@ -178,13 +177,13 @@ void AudioManager::update_track(int track_number)
         ledcWriteTone(track_number + 1, freq);
         last_event[track_number]++;
 
-        Serial.print("Played ");
-        Serial.print(track.get_note(cur_ev));
-        Serial.print(" for ");
-        Serial.print(track.get_duration(cur_ev));
-        Serial.print("ms");
-        Serial.print(" - Frequency: ");
-        Serial.println(freq);
+        // Serial.print("Played ");
+        // Serial.print(track.get_note(cur_ev));
+        // Serial.print(" for ");
+        // Serial.print(track.get_duration(cur_ev));
+        // Serial.print("ms");
+        // Serial.print(" - Frequency: ");
+        // Serial.println(freq);
 
         return;
     }
