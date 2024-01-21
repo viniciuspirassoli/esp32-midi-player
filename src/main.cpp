@@ -7,11 +7,11 @@
 #include "pins.h"
 
 // Uncomment for task execution time stats
-#define MEASURE_STATS
+// #define MEASURE_STATS
 
-#define DISPLAY_TASK_PERIOD_MS 200
+#define DISPLAY_TASK_PERIOD_MS 50
 #define BUTTONS_TASK_PERIOD_MS 50
-#define TRACK_TASK_PERIOD_MS 8
+#define TRACK_TASK_PERIOD_MS 4
 
 AudioManager am;
 OLEDManager oled;
@@ -51,16 +51,17 @@ void setup()
   oled.begin();
   buttons.begin();
 
-  xTaskCreate(trackUpdate, "track_1_update", 1024 * 4, (void *)&param1, 5, NULL);
-  xTaskCreate(trackUpdate, "track_2_update", 1024 * 4, (void *)&param2, 5, NULL);
-  xTaskCreate(trackUpdate, "track_3_update", 1024 * 4, (void *)&param3, 5, NULL);
-  xTaskCreate(trackUpdate, "track_4_update", 1024 * 4, (void *)&param4, 5, NULL);
 
-  xTaskCreate(buttonsTask, "buttons_manager", 2 * CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 6, NULL);
-  xTaskCreate(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 1, NULL);
+  xTaskCreatePinnedToCore(trackUpdate, "track_1_update", 1024 * 4, (void *)&param1, 4, NULL, 0);
+  xTaskCreatePinnedToCore(trackUpdate, "track_2_update", 1024 * 4, (void *)&param2, 4, NULL, 0);
+  xTaskCreatePinnedToCore(trackUpdate, "track_3_update", 1024 * 4, (void *)&param3, 4, NULL, 0);
+  xTaskCreatePinnedToCore(trackUpdate, "track_4_update", 1024 * 4, (void *)&param4, 4, NULL, 0);
+
+  xTaskCreatePinnedToCore(buttonsTask, "buttons_manager", 2 * CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 3, NULL, 0);
+  xTaskCreatePinnedToCore(oledTask, "oled", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 2, NULL, 0);
 
   #ifdef MEASURE_STATS
-  xTaskCreate(printMeasurements, "measurements", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 7, NULL);
+  xTaskCreatePinnedToCore(printMeasurements, "measurements", CONFIG_ESP_MINIMAL_SHARED_STACK_SIZE, NULL, 1, NULL, 1);
   #endif
 
 }
